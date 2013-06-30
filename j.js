@@ -6,41 +6,59 @@
 
 
     var Game = function(canvasId, width, height) {
-      var coq = new Coquette(this, canvasId, width, height, "#000");
+      var self = this
+      this.coquette = new Coquette(this, canvasId, width, height, "#000");
 
-      coq.entities.create(Person, { pos:{ x:843, y:40 }, color:"#099" }); // paramour
-      coq.entities.create(Person, 
-                          { pos:{ x:849, y:210 }, color:"#f07", // player
-                            update: function() {
-                              var SPEED = 2.4;
+      for (var i=0; i < 20; i++){
+        var x = Math.random() * width;
+        var y = Math.random() * height;
+        console.log([x,y]);
+        this.coquette.entities.create(Person, { pos:{ x:x, y:y }, color:"#099" }); // paramour
 
-                              var directions = {
-                              }
+      };
 
-                              for (key in directions){
-                                if (coq.inputter.state(key)){
-                                  var d = directions[key];
-                                  this.pos.x += d[0]
-                                  this.pos.y += d[1]
-                                }
-                              }
-                            },
-                            collision: function(other) {
-                              other.pos.y = this.pos.y; // follow the player
-                            }
-                          });
+      this.coquette.entities.create(Person, { pos:{ x:249, y:110 }, color:"#f07", // player
+
+                                    update: function() {
+
+                                      var speed = 2;
+                                      var keys = {
+                                        'UP_ARROW': [0, -speed],
+                                        'DOWN_ARROW': [0, speed],
+                                        'LEFT_ARROW': [-speed, 0],
+                                        'RIGHT_ARROW': [speed, 0],
+                                      }
+
+                                      for (key in keys){
+                                        if (self.coquette.inputter.state(self.coquette.inputter[key])){
+                                          var dir = keys[key]
+                                          this.pos.x += dir[0];
+                                          this.pos.y += dir[1];
+                                        }
+                                      }
+
+
+                                    },
+                                    collision: function(other) {
+                                      // follow the player
+                                      other.pos.x = this.pos.x - .2
+                                      other.pos.y = this.pos.y - .2
+                                    }
+                                  });
     };
 
     var Person = function(_, settings) {
       for (var i in settings) {
         this[i] = settings[i];
       }
-      this.size = { x:20, y:20 };
+      this.size = { x:9, y:9 };
       this.draw = function(ctx) {
         ctx.fillStyle = settings.color;
         ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
       };
     };
+
+
 
 
     $("#game").click(function(){
