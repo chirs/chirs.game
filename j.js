@@ -13,8 +13,7 @@
         var x = Math.random() * width;
         var y = Math.random() * height;
         console.log([x,y]);
-        this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }, color:"#099" }); // paramour
-
+        this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
       };
 
       this.coquette.entities.create(Person, { pos:{ x:249, y:110 }, color:"#f07", // player
@@ -68,16 +67,30 @@
       }
       this.size = { x:9, y:9 };
       this.draw = function(ctx) {
-        ctx.fillStyle = settings.color;
+        ctx.fillStyle = this.color();
         ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
       };
 
+      this.angry = false;
       this.vel = {x: makeVel(), y: makeVel()}
 
     };
 
     Adversary.prototype = {
+
+      color: function(){
+        if (this.angry){
+          return "#c3c";
+        } else {
+          return "#09c";
+        }
+      },
+
+
       update: function(tick) {
+        if (Math.random() < .001){
+          this.angry = !this.angry;
+        };
 
 
         var mx = this.vel.x * tick;
