@@ -58,7 +58,6 @@
                                       if (self.coquette.inputter.state(self.coquette.inputter.SPACE)){
                                         var attached = getCollidingEntities(self.coquette.collider.collideRecords, this);
                                         for (var i=0; i < attached.length; i++){
-                                          console.log(attached[i].pos);
                                           attached[i].pos.x += 10 * Math.random * this.speed * plusMinus()
                                           attached[i].pos.y += 10 * Math.random * this.speed * plusMinus()
                                           //attached[i].angry = true;
@@ -81,9 +80,6 @@
                                           self.coquette.entities.create(Bullet, { pos: {x: this.pos.x, y: this.pos.y }, vector: vel });
                                         }
                                       }
-
-
-
                                     },
 
                                     collision: function(other) {
@@ -92,14 +88,16 @@
                                         console.log("You lose");
                                       }
                                       else {
-                                        other.pos.x = this.pos.x - .2
-                                        other.pos.y = this.pos.y - .2
+                                        if (other instanceof Adversary) {
+                                          other.pos.x = this.pos.x - .2
+                                          other.pos.y = this.pos.y - .2
+                                        };
                                       }
                                     }
                                   });
     };
 
-    var Person = function(_, settings) {
+    var Person = function(game, settings) {
       for (var i in settings) {
         this[i] = settings[i];
       }
@@ -114,7 +112,8 @@
       return (Math.random() - .5) / 10;
     }
 
-    var Adversary = function(_, settings){
+    var Adversary = function(game, settings){
+      this.game = game
       for (var i in settings) {
         this[i] = settings[i];
       }
@@ -140,6 +139,11 @@
         }
       },
 
+      kill: function() {
+        this.game.coquette.entities.destroy(this);
+      },
+
+
       
       update: function(tick) {
         if (Math.random() < .01){
@@ -154,7 +158,7 @@
         //if (!this.game.coquette.renderer.onScreen(this)) {
         //  this.kill();
         //}
-      },
+      }
     }
 
 
@@ -166,7 +170,7 @@
 
     Bullet.prototype = {
         size: { x:3, y:3 },
-        speed: .4,
+        speed: .1,
 
         update: function(tick) {
 
@@ -194,12 +198,14 @@
 
 
         collision: function(other) {
-          //if (other instanceof Asteroid) {
-          //  this.kill();
+          if (other instanceof Adversary) {
+            this.kill();
+            other.kill();
+          }
         },
 
         kill: function() {
-          //this.game.coquette.entities.destroy(this);
+          this.game.coquette.entities.destroy(this);
         }
     }
   
