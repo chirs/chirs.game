@@ -11,6 +11,32 @@
       return 1;
     }
 
+    var timePassed = function(last, interval) { return last + interval < new Date().getTime(); };
+    
+    var center = function(obj) {
+      if(obj.pos !== undefined) {
+        return {
+          x: obj.pos.x + (obj.size.x / 2),
+          y: obj.pos.y + (obj.size.y / 2),
+        };
+      }
+    };
+
+    var getCollidingEntities = function(collisions, entity){
+      var entities = []
+      for (var i=0; i < collisions.length; i++){
+        var colliding = collisions[i];
+        if (colliding[0] === entity){
+          entities.push(colliding[1]);
+        };
+        if (colliding[1] === entity){
+          entities.push(colliding[0]);
+        };
+      }
+      return entities;
+    };
+
+
     var Game = function(canvasId, width, height) {
       var self = this
       this.coquette = new Coquette(this, canvasId, width, height, "#000");
@@ -23,7 +49,6 @@
       }
 
       this.state = this.STATE.PLAY
-      console.log(this.state);
 
       for (var i=0; i < 20; i++){
         var x = Math.random() * width;
@@ -33,23 +58,28 @@
 
 
 
-      var getCollidingEntities = function(collisions, entity){
-        var entities = []
-        for (var i=0; i < collisions.length; i++){
-          var colliding = collisions[i];
-          if (colliding[0] === entity){
-            entities.push(colliding[1]);
-          };
-          if (colliding[1] === entity){
-            entities.push(colliding[0]);
-          };
-        }
-        return entities;
-      };
 
       this.coquette.entities.create(Person, { 
+        game: self,
         pos:{ x:249, y:110 }, 
         color:"#f07", // player
+
+
+        SHOOT_DELAY: 300,
+        lastShot: 0,
+
+        shootBullet: function(vector){
+          if (timePassed(this.lastShot, this.SHOOT_DELAY)) {
+            var c = center(this);
+            this.game.coquette.entities.create(Bullet, {
+              pos: { x:c.x, y:c.y },
+              vector: vector,
+              owner: this,
+            });
+
+            this.lastShot = new Date().getTime();
+          }
+        },
 
         update: function() {
           var speed = 2;
@@ -79,7 +109,7 @@
             if (self.coquette.inputter.state(self.coquette.inputter[key])){
               var dir = bullets[key]
               var vel = {x: dir[0], y: dir[1] }
-              self.coquette.entities.create(Bullet, { pos: {x: this.pos.x, y: this.pos.y }, vector: vel });
+              this.shootBullet(vel);
             }
           }
         },
@@ -90,7 +120,9 @@
             // Should block collision.
           }
           else {
-            self.state = self.STATE.LOSE;
+            if ((other instanceof Adversary) && (other.shielded === false)){
+                self.state = self.STATE.LOSE;
+            }
           }
         }
       });
@@ -125,16 +157,23 @@
 
     Game.prototype =  {
       draw: function(ctx) {
+
         if (this.state === this.STATE.LOSE){
           ctx.fillStyle = "#fff"
           ctx.fillRect(0, 0, 500, 500);
+          ctx.lineWidth=1;
+          ctx.fillStyle = "#ccc"
+          ctx.font = "44px sans-serif";
+          ctx.fillText("You Lose", 700, 100);
         };
 
         ctx.lineWidth=1;
-        ctx.fillStyle = "#990";
+        ctx.fillStyle = "#390";
         ctx.font = "18px sans-serif";
         ctx.fillText("Score: " + this.score, 20, 20);
+
       }
+
     };
     
 
