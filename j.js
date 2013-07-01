@@ -48,6 +48,13 @@
                                         'RIGHT_ARROW': [speed, 0],
                                       }
 
+                                      var bullets = {
+                                        'W': [0, -speed],
+                                        'S': [0, speed],
+                                        'D': [speed, 0],
+                                        'A': [-speed, 0],
+                                      }
+
                                       if (self.coquette.inputter.state(self.coquette.inputter.SPACE)){
                                         var attached = getCollidingEntities(self.coquette.collider.collideRecords, this);
                                         for (var i=0; i < attached.length; i++){
@@ -67,8 +74,18 @@
                                         }
                                       }
 
+                                      for (key in bullets){
+                                        if (self.coquette.inputter.state(self.coquette.inputter[key])){
+                                          var dir = bullets[key]
+                                          var vel = {x: dir[0], y: dir[1] }
+                                          self.coquette.entities.create(Bullet, { pos: {x: this.pos.x, y: this.pos.y }, vector: vel });
+                                        }
+                                      }
+
+
 
                                     },
+
                                     collision: function(other) {
                                       // follow the player
                                       if (other.angry){
@@ -102,10 +119,6 @@
         this[i] = settings[i];
       }
       this.size = { x:9, y:9 };
-      this.draw = function(ctx) {
-        ctx.fillStyle = this.color();
-        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-      };
 
       this.angry = false;
       this.vel = {x: makeVel(), y: makeVel()}
@@ -114,6 +127,11 @@
 
     Adversary.prototype = {
 
+      draw: function(ctx) {
+        ctx.fillStyle = this.color();
+        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+      },
+      
       color: function(){
         if (this.angry){
           return "#c3c";
@@ -122,23 +140,70 @@
         }
       },
 
-
+      
       update: function(tick) {
         if (Math.random() < .01){
           this.angry = !this.angry;
         };
-
-
+        
         var mx = this.vel.x * tick;
         var my = this.vel.y * tick;
         this.pos.x += mx;
         this.pos.y += my;
-
+        
         //if (!this.game.coquette.renderer.onScreen(this)) {
         //  this.kill();
         //}
       },
     }
+
+
+    var Bullet = function(game, settings) {
+      this.game = game;
+      this.pos = settings.pos;
+      this.vel = settings.vector;
+    };
+
+    Bullet.prototype = {
+        size: { x:3, y:3 },
+        speed: .4,
+
+        update: function(tick) {
+
+          var mx = this.vel.x * tick * this.speed;
+          var my = this.vel.y * tick * this.speed;
+          this.pos.x += mx;
+          this.pos.y += my;
+
+          if (!this.game.coquette.renderer.onScreen(this)) {
+            this.kill();
+          }
+        },
+
+        //draw: function(ctx) {
+          //this.game.startClip(ctx);
+          //this.game.circle(this.pos, this.size.x / 2, "#fff");
+          //this.game.endClip(ctx);
+        //},
+
+        draw: function(ctx) {
+          ctx.fillStyle = "#ccc";
+          ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+        },
+
+
+
+        collision: function(other) {
+          //if (other instanceof Asteroid) {
+          //  this.kill();
+        },
+
+        kill: function() {
+          //this.game.coquette.entities.destroy(this);
+        }
+    }
+  
+
 
 
 
