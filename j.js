@@ -15,12 +15,23 @@
       var self = this
       this.coquette = new Coquette(this, canvasId, width, height, "#000");
 
+      this.score = 0
+
+      this.STATE = {
+        PLAY: 0,
+        LOSE: 1
+      }
+
+      this.state = this.STATE.PLAY
+      console.log(this.state);
+
       for (var i=0; i < 20; i++){
         var x = Math.random() * width;
         var y = Math.random() * height;
-        console.log([x,y]);
         this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
       };
+
+
 
       var getCollidingEntities = function(collisions, entity){
         var entities = []
@@ -36,65 +47,53 @@
         return entities;
       };
 
-      this.coquette.entities.create(Person, { pos:{ x:249, y:110 }, color:"#f07", // player
+      this.coquette.entities.create(Person, { 
+        pos:{ x:249, y:110 }, 
+        color:"#f07", // player
 
-                                    update: function() {
+        update: function() {
+          var speed = 2;
+          var directions = {
+            'UP_ARROW': [0, -speed],
+            'DOWN_ARROW': [0, speed],
+            'LEFT_ARROW': [-speed, 0],
+            'RIGHT_ARROW': [speed, 0],
+          }
 
-                                      var speed = 2;
-                                      var keys = {
-                                        'UP_ARROW': [0, -speed],
-                                        'DOWN_ARROW': [0, speed],
-                                        'LEFT_ARROW': [-speed, 0],
-                                        'RIGHT_ARROW': [speed, 0],
-                                      }
+          var bullets = {
+            'W': [0, -speed],
+            'S': [0, speed],
+            'D': [speed, 0],
+            'A': [-speed, 0],
+          }
+          
+          for (key in directions){
+            if (self.coquette.inputter.state(self.coquette.inputter[key])){
+              var dir = directions[key]
+              this.pos.x += dir[0];
+              this.pos.y += dir[1];
+            }
+          }
+          
+          for (key in bullets){
+            if (self.coquette.inputter.state(self.coquette.inputter[key])){
+              var dir = bullets[key]
+              var vel = {x: dir[0], y: dir[1] }
+              self.coquette.entities.create(Bullet, { pos: {x: this.pos.x, y: this.pos.y }, vector: vel });
+            }
+          }
+        },
 
-                                      var bullets = {
-                                        'W': [0, -speed],
-                                        'S': [0, speed],
-                                        'D': [speed, 0],
-                                        'A': [-speed, 0],
-                                      }
 
-                                      if (self.coquette.inputter.state(self.coquette.inputter.SPACE)){
-                                        var attached = getCollidingEntities(self.coquette.collider.collideRecords, this);
-                                        for (var i=0; i < attached.length; i++){
-                                          attached[i].pos.x += 10 * Math.random * this.speed * plusMinus()
-                                          attached[i].pos.y += 10 * Math.random * this.speed * plusMinus()
-                                          //attached[i].angry = true;
-                                        };
-
-                                      };
-
-                                      for (key in keys){
-                                        if (self.coquette.inputter.state(self.coquette.inputter[key])){
-                                          var dir = keys[key]
-                                          this.pos.x += dir[0];
-                                          this.pos.y += dir[1];
-                                        }
-                                      }
-
-                                      for (key in bullets){
-                                        if (self.coquette.inputter.state(self.coquette.inputter[key])){
-                                          var dir = bullets[key]
-                                          var vel = {x: dir[0], y: dir[1] }
-                                          self.coquette.entities.create(Bullet, { pos: {x: this.pos.x, y: this.pos.y }, vector: vel });
-                                        }
-                                      }
-                                    },
-
-                                    collision: function(other) {
-                                      // follow the player
-                                      if (other.angry){
-                                        console.log("You lose");
-                                      }
-                                      else {
-                                        if (other instanceof Adversary) {
-                                          other.pos.x = this.pos.x - .2
-                                          other.pos.y = this.pos.y - .2
-                                        };
-                                      }
-                                    }
-                                  });
+        collision: function(other) {
+          if (other.shielded){
+            // Should block collision.
+          }
+          else {
+            self.state = self.STATE.LOSE;
+          }
+        }
+      });
     };
 
     var Person = function(game, settings) {
@@ -119,10 +118,25 @@
       }
       this.size = { x:9, y:9 };
 
-      this.angry = false;
+      this.shielded = false;
       this.vel = {x: makeVel(), y: makeVel()}
 
     };
+
+    Game.prototype =  {
+      draw: function(ctx) {
+        if (this.state === this.STATE.LOSE){
+          ctx.fillStyle = "#fff"
+          ctx.fillRect(0, 0, 500, 500);
+        };
+
+        ctx.lineWidth=1;
+        ctx.fillStyle = "#990";
+        ctx.font = "18px sans-serif";
+        ctx.fillText("Score: " + this.score, 20, 20);
+      }
+    };
+    
 
     Adversary.prototype = {
 
@@ -132,7 +146,7 @@
       },
       
       color: function(){
-        if (this.angry){
+        if (this.shielded){
           return "#c3c";
         } else {
           return "#09c";
@@ -147,7 +161,7 @@
       
       update: function(tick) {
         if (Math.random() < .01){
-          this.angry = !this.angry;
+          this.shielded = !this.shielded;
         };
         
         var mx = this.vel.x * tick;
@@ -184,23 +198,19 @@
           }
         },
 
-        //draw: function(ctx) {
-          //this.game.startClip(ctx);
-          //this.game.circle(this.pos, this.size.x / 2, "#fff");
-          //this.game.endClip(ctx);
-        //},
 
         draw: function(ctx) {
           ctx.fillStyle = "#ccc";
           ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
         },
 
-
-
         collision: function(other) {
           if (other instanceof Adversary) {
             this.kill();
-            other.kill();
+            if (other.shielded === false){
+              this.game.score += 1;
+              other.kill();
+            }
           }
         },
 
