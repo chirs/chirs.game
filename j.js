@@ -4,6 +4,12 @@
     
     var loaded = false;
 
+    var plusMinus = function(){
+      if (Math.random() < .5){
+        return -1;
+      }
+      return 1;
+    }
 
     var Game = function(canvasId, width, height) {
       var self = this
@@ -14,6 +20,20 @@
         var y = Math.random() * height;
         console.log([x,y]);
         this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
+      };
+
+      var getCollidingEntities = function(collisions, entity){
+        var entities = []
+        for (var i=0; i < collisions.length; i++){
+          var colliding = collisions[i];
+          if (colliding[0] === entity){
+            entities.push(colliding[1]);
+          };
+          if (colliding[1] === entity){
+            entities.push(colliding[0]);
+          };
+        }
+        return entities;
       };
 
       this.coquette.entities.create(Person, { pos:{ x:249, y:110 }, color:"#f07", // player
@@ -28,6 +48,17 @@
                                         'RIGHT_ARROW': [speed, 0],
                                       }
 
+                                      if (self.coquette.inputter.state(self.coquette.inputter.SPACE)){
+                                        var attached = getCollidingEntities(self.coquette.collider.collideRecords, this);
+                                        for (var i=0; i < attached.length; i++){
+                                          console.log(attached[i].pos);
+                                          attached[i].pos.x += 10 * Math.random * this.speed * plusMinus()
+                                          attached[i].pos.y += 10 * Math.random * this.speed * plusMinus()
+                                          //attached[i].angry = true;
+                                        };
+
+                                      };
+
                                       for (key in keys){
                                         if (self.coquette.inputter.state(self.coquette.inputter[key])){
                                           var dir = keys[key]
@@ -40,8 +71,13 @@
                                     },
                                     collision: function(other) {
                                       // follow the player
-                                      other.pos.x = this.pos.x - .2
-                                      other.pos.y = this.pos.y - .2
+                                      if (other.angry){
+                                        console.log("You lose");
+                                      }
+                                      else {
+                                        other.pos.x = this.pos.x - .2
+                                        other.pos.y = this.pos.y - .2
+                                      }
                                     }
                                   });
     };
@@ -88,7 +124,7 @@
 
 
       update: function(tick) {
-        if (Math.random() < .001){
+        if (Math.random() < .01){
           this.angry = !this.angry;
         };
 
