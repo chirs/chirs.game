@@ -143,17 +143,6 @@
       return (Math.random() - .5) / 10;
     }
 
-    var Adversary = function(game, settings){
-      this.game = game
-      for (var i in settings) {
-        this[i] = settings[i];
-      }
-      this.size = { x:9, y:9 };
-
-      this.shielded = false;
-      this.vel = {x: makeVel(), y: makeVel()}
-
-    };
 
     Game.prototype =  {
       draw: function(ctx) {
@@ -173,6 +162,20 @@
         ctx.fillText("Score: " + this.score, 20, 20);
 
       }
+
+    };
+
+    // Adversar
+
+    var Adversary = function(game, settings){
+      this.game = game
+      for (var i in settings) {
+        this[i] = settings[i];
+      }
+      this.size = { x:9, y:9 };
+
+      this.shielded = false;
+      this.vel = {x: makeVel(), y: makeVel()}
 
     };
     
@@ -214,6 +217,7 @@
       }
     }
 
+    // Bullet.
 
     var Bullet = function(game, settings) {
       this.game = game;
@@ -239,7 +243,7 @@
 
 
         draw: function(ctx) {
-          ctx.fillStyle = "#ccc";
+          ctx.fillStyle = "#888";
           ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
         },
 
@@ -258,11 +262,7 @@
         }
     }
   
-
-
-
-
-
+    // Play
 
     $("#game").click(function(){
       if (loaded === false){
