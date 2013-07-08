@@ -128,6 +128,22 @@
       });
     };
 
+
+    var Box = function(game, settings){
+      this.size = settings.size || {height:9, width:9 };
+      this.position = settings.position || {x:0, y:0 };
+      this.color = setting.scolor || "#ccc";
+
+      this.draw = function(ctx) {
+        ctx.fillStyle = "#fff"
+        ctx.fillRect(this.position.x0, this.position.y, this.size.height, this.size.width);
+        ctx.lineWidth=1;
+        ctx.fillStyle = "#ccc"
+        ctx.font = "44px sans-serif";
+      }
+
+    };
+
     var Person = function(game, settings) {
       for (var i in settings) {
         this[i] = settings[i];
@@ -153,7 +169,10 @@
           ctx.lineWidth=1;
           ctx.fillStyle = "#ccc"
           ctx.font = "44px sans-serif";
-          ctx.fillText("You Lose", 700, 100);
+
+          ctx.fillText("game over", 700, 100);
+          ctx.font = "22px sans-serif";          
+          ctx.fillText("play again", 700, 140);
         };
 
         ctx.lineWidth=1;
@@ -165,7 +184,7 @@
 
     };
 
-    // Adversar
+    // Adversary
 
     var Adversary = function(game, settings){
       this.game = game
@@ -174,7 +193,10 @@
       }
       this.size = { x:9, y:9 };
 
+
+
       this.shielded = false;
+      this.shieldTime = new Date();
       this.vel = {x: makeVel(), y: makeVel()}
 
     };
@@ -202,9 +224,15 @@
 
       
       update: function(tick) {
-        if (Math.random() < .01){
-          this.shielded = !this.shielded;
+        if ((this.shielded === false) && (Math.random() < .01)){
+          this.shielded = true;
+          this.shieldTime = new Date()
         };
+
+        if ((this.shielded === true) && (new Date() - this.shieldTime > 1000)){
+          this.shielded = false;
+        };
+         
         
         var mx = this.vel.x * tick;
         var my = this.vel.y * tick;
@@ -226,8 +254,8 @@
     };
 
     Bullet.prototype = {
-        size: { x:3, y:3 },
-        speed: .1,
+        size: { x:6, y:6 },
+        speed: .2,
 
         update: function(tick) {
 
@@ -251,7 +279,9 @@
           if (other instanceof Adversary) {
             this.kill();
             if (other.shielded === false){
-              this.game.score += 1;
+              if (this.game.state === this.game.STATE.PLAY){
+                this.game.score += 1;
+              }
               other.kill();
             }
           }
