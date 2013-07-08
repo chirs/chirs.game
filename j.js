@@ -41,8 +41,8 @@
       var self = this
       this.coquette = new Coquette(this, canvasId, width, height, "#000");
 
-      this.score = 0
 
+      // State management.
       this.STATE = {
         PLAY: 0,
         LOSE: 1
@@ -50,36 +50,24 @@
 
       this.state = this.STATE.PLAY
 
-      for (var i=0; i < 20; i++){
+
+      this.score = 0;
+      this.pills = 10;
+      this.pillsEaten = 0;
+
+
+      for (var i=0; i < this.pills; i++){
         var x = Math.random() * width;
         var y = Math.random() * height;
-        this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
+        this.coquette.entities.create(Pill, { pos:{ x:x, y:y }, });
       };
 
+      // Pacman.
 
-
-
-      this.coquette.entities.create(Person, { 
+      this.coquette.entities.create(Pacman, { 
         game: self,
-        pos:{ x:249, y:110 }, 
-        color:"#f07", // player
-
-
-        SHOOT_DELAY: 300,
-        lastShot: 0,
-
-        shootBullet: function(vector){
-          if (timePassed(this.lastShot, this.SHOOT_DELAY)) {
-            var c = center(this);
-            this.game.coquette.entities.create(Bullet, {
-              pos: { x:c.x, y:c.y },
-              vector: vector,
-              owner: this,
-            });
-
-            this.lastShot = new Date().getTime();
-          }
-        },
+        pos: { x: 249, y: 110 },
+        color: "#ccc",
 
         update: function() {
           var speed = 2;
@@ -90,12 +78,6 @@
             'RIGHT_ARROW': [speed, 0],
           }
 
-          var bullets = {
-            'W': [0, -speed],
-            'S': [0, speed],
-            'D': [speed, 0],
-            'A': [-speed, 0],
-          }
           
           for (key in directions){
             if (self.coquette.inputter.state(self.coquette.inputter[key])){
@@ -104,76 +86,36 @@
               this.pos.y += dir[1];
             }
           }
-          
-          for (key in bullets){
-            if (self.coquette.inputter.state(self.coquette.inputter[key])){
-              var dir = bullets[key]
-              var vel = {x: dir[0], y: dir[1] }
-              this.shootBullet(vel);
-            }
-          }
         },
 
 
         collision: function(other) {
-          if (other.shielded){
-            // Should block collision.
+          if (other instanceof Pill){
+            other.eat();
           }
-          else {
-            if ((other instanceof Adversary) && (other.shielded === false)){
+
+          if (other instanceof Ghost){
                 self.state = self.STATE.LOSE;
-            }
           }
         }
       });
-    };
 
+      // Ghosts.
 
-    var Box = function(game, settings){
-      this.size = settings.size || {height:9, width:9 };
-      this.position = settings.position || {x:0, y:0 };
-      this.color = setting.scolor || "#ccc";
+      var COLORS = ["red", "green", "blue", "purple"]
 
-      this.draw = function(ctx) {
-        ctx.fillStyle = "#fff"
-        ctx.fillRect(this.position.x0, this.position.y, this.size.height, this.size.width);
-        ctx.lineWidth=1;
-        ctx.fillStyle = "#ccc"
-        ctx.font = "44px sans-serif";
-      }
-
-    };
-
-    var Person = function(game, settings) {
-      for (var i in settings) {
-        this[i] = settings[i];
-      }
-      this.size = { x:9, y:9 };
-      this.draw = function(ctx) {
-        ctx.fillStyle = settings.color;
-        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+      for (var i=0; i < 4; i++){
+        this.coquette.entities.create(Ghost, { pos:{ x:200, y:200 }, color: COLORS[i]}); // adversary
       };
+
+
     };
-
-    var makeVel = function(){
-      return (Math.random() - .5) / 10;
-    }
-
 
     Game.prototype =  {
       draw: function(ctx) {
 
         if (this.state === this.STATE.LOSE){
-          ctx.fillStyle = "#fff"
-          ctx.fillRect(0, 0, 500, 500);
-          ctx.lineWidth=1;
-          ctx.fillStyle = "#ccc"
-          ctx.font = "44px sans-serif";
-
-          ctx.fillText("game over", 700, 100);
-          ctx.font = "22px sans-serif";          
-          ctx.fillText("play again", 700, 140);
-        };
+        }
 
         ctx.lineWidth=1;
         ctx.fillStyle = "#390";
@@ -184,28 +126,71 @@
 
     };
 
-    // Adversary
 
-    var Adversary = function(game, settings){
+
+    // Pacman
+    
+    var Pacman = function(game, settings) {
+      for (var i in settings) {
+        this[i] = settings[i];
+      }
+      this.size = { x:20, y:20 };
+      this.draw = function(ctx) {
+        ctx.fillStyle = settings.color;
+        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+      };
+    };
+
+
+    // Ghosts 
+
+
+    var Pill = function(game, settings){
+      this.value = 10
+      this.game = game
+      this.pos = settings.pos;
+      this.size = { height:10, width:10 };
+    };
+
+
+    Pill.prototype = {
+      draw: function(ctx) {
+        ctx.fillStyle = "#777";
+        ctx.fillRect(this.pos.x, this.pos.y, this.size.height, this.size.width);
+      },
+
+      eat: function() {
+        this.game.score += this.value;
+        this.game.coquette.entities.destroy(this);
+      },
+
+    }
+
+    var Ghost = function(game, settings){
       this.game = game
       for (var i in settings) {
         this[i] = settings[i];
       }
-      this.size = { x:9, y:9 };
+      this.size = { x:20, y:20 };
 
-
+      this.DIRECTIONS = {
+        UP: 0,
+        RIGHT: 1,
+        DOWN: 2,
+        LEFT: 3,
+      };
 
       this.shielded = false;
       this.shieldTime = new Date();
-      this.vel = {x: makeVel(), y: makeVel()}
-
+      this.direction = this.DIRECTIONS.RIGHT;
+      this.speed = 1;
     };
-    
 
-    Adversary.prototype = {
+
+    Ghost.prototype = {
 
       draw: function(ctx) {
-        ctx.fillStyle = this.color();
+        ctx.fillStyle = this.color;
         ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
       },
       
@@ -232,65 +217,27 @@
         if ((this.shielded === true) && (new Date() - this.shieldTime > 1000)){
           this.shielded = false;
         };
-         
-        
-        var mx = this.vel.x * tick;
-        var my = this.vel.y * tick;
-        this.pos.x += mx;
-        this.pos.y += my;
-        
-        //if (!this.game.coquette.renderer.onScreen(this)) {
-        //  this.kill();
-        //}
+
+        if (Math.random() < .1){
+          this.direction = Math.floor(Math.random() * 4);
+        };
+
+        switch (this.direction) {
+
+        case this.DIRECTIONS.UP:
+          this.pos.y -= this.speed; break;
+        case this.DIRECTIONS.DOWN:
+          this.pos.y += this.speed; break;
+        case this.DIRECTIONS.LEFT:
+          this.pos.x -= this.speed; break;
+        case this.DIRECTIONS.RIGHT:
+          this.pos.x += this.speed; break;
+
+        }
+
       }
     }
 
-    // Bullet.
-
-    var Bullet = function(game, settings) {
-      this.game = game;
-      this.pos = settings.pos;
-      this.vel = settings.vector;
-    };
-
-    Bullet.prototype = {
-        size: { x:6, y:6 },
-        speed: .2,
-
-        update: function(tick) {
-
-          var mx = this.vel.x * tick * this.speed;
-          var my = this.vel.y * tick * this.speed;
-          this.pos.x += mx;
-          this.pos.y += my;
-
-          if (!this.game.coquette.renderer.onScreen(this)) {
-            this.kill();
-          }
-        },
-
-
-        draw: function(ctx) {
-          ctx.fillStyle = "#888";
-          ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-        },
-
-        collision: function(other) {
-          if (other instanceof Adversary) {
-            this.kill();
-            if (other.shielded === false){
-              if (this.game.state === this.game.STATE.PLAY){
-                this.game.score += 1;
-              }
-              other.kill();
-            }
-          }
-        },
-
-        kill: function() {
-          this.game.coquette.entities.destroy(this);
-        }
-    }
   
     // Play
 

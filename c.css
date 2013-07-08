@@ -13,8 +13,8 @@ div#game {
     position: absolute;
     top: 28%;
     left: 10%;
-    height: 45%;
-    width: 80%;
+    height: 500px;
+    width: 500px;
 
     color: #dee;
     background-color: #0cf;
