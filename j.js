@@ -1,6 +1,14 @@
 (function() {
 
   $(document).ready(function() {
+
+    var DIRECTIONS = {
+        UP: 0,
+        RIGHT: 1,
+        DOWN: 2,
+        LEFT: 3,
+    };
+
     
     var loaded = false;
 
@@ -68,23 +76,32 @@
         game: self,
         pos: { x: 249, y: 110 },
         color: "#ccc",
+        direction: DIRECTIONS.LEFT,
+        speed: 1,
 
         update: function() {
-          var speed = 2;
-          var directions = {
-            'UP_ARROW': [0, -speed],
-            'DOWN_ARROW': [0, speed],
-            'LEFT_ARROW': [-speed, 0],
-            'RIGHT_ARROW': [speed, 0],
+          var keys = {
+            'UP_ARROW': DIRECTIONS.UP,
+            'DOWN_ARROW': DIRECTIONS.DOWN,
+            'LEFT_ARROW': DIRECTIONS.LEFT,
+            'RIGHT_ARROW': DIRECTIONS.RIGHT,
           }
-
           
-          for (key in directions){
+          for (key in keys){
             if (self.coquette.inputter.state(self.coquette.inputter[key])){
-              var dir = directions[key]
-              this.pos.x += dir[0];
-              this.pos.y += dir[1];
-            }
+              this.direction = keys[key];
+            };
+          };
+
+          switch (this.direction) {
+          case DIRECTIONS.UP:
+            this.pos.y -= this.speed; break;
+          case DIRECTIONS.DOWN:
+            this.pos.y += this.speed; break;
+          case DIRECTIONS.LEFT:
+            this.pos.x -= this.speed; break;
+          case DIRECTIONS.RIGHT:
+            this.pos.x += this.speed; break;
           }
         },
 
@@ -101,12 +118,25 @@
       });
 
       // Ghosts.
-
-      var COLORS = ["red", "green", "blue", "purple"]
+      var GHOSTS = ["red", "green", "blue", "purple"]
 
       for (var i=0; i < 4; i++){
-        this.coquette.entities.create(Ghost, { pos:{ x:200, y:200 }, color: COLORS[i]}); // adversary
+        this.coquette.entities.create(Ghost, { pos:{ x:200, y:200 }, color: GHOSTS[i]}); 
       };
+
+      // Blocks
+
+      var BLOCKS = [
+        //{color: "#999", pos: {x: 100, y: 100 }, width: 100, height: 200},
+        //{color: "#999", pos: {x: 300, y: 100 }, width: 100, height: 200},
+        //{color: "#999", pos: {x: 400, y: 100 }, width: 100, height: 200}
+        {color: "#999", pos: {x: 400, y: 100 }}
+      ]
+
+      //for (var i=0; i < BLOCKS.length; i++){
+      //  this.coquette.entities.create(Block, BLOCKS[i])
+      //};
+      
 
 
     };
@@ -142,6 +172,34 @@
     };
 
 
+
+    // Block
+    
+    var Block = function(game, settings) {
+      for (var i in settings) {
+        this[i] = settings[i];
+      }
+      this.height = 20;
+      this.width = 20;
+      //this.height = settings.height;
+      //this.width = settings.width;
+      this.draw = function(ctx) {
+        ctx.fillStyle = settings.color;
+        //ctx.fillRect(this.pos.x, this.pos.y, this.height, this.width);
+        ctx.fillRect(this.pos.x, this.pos.y, 20, 20);
+      };
+    };
+
+    Block.prototype = {
+
+      collision: function(other) {
+        other.direction = null;
+      }
+      
+    }
+      
+
+
     // Ghosts 
 
 
@@ -173,16 +231,10 @@
       }
       this.size = { x:20, y:20 };
 
-      this.DIRECTIONS = {
-        UP: 0,
-        RIGHT: 1,
-        DOWN: 2,
-        LEFT: 3,
-      };
 
       this.shielded = false;
       this.shieldTime = new Date();
-      this.direction = this.DIRECTIONS.RIGHT;
+      this.direction = DIRECTIONS.RIGHT;
       this.speed = 1;
     };
 
@@ -223,14 +275,13 @@
         };
 
         switch (this.direction) {
-
-        case this.DIRECTIONS.UP:
+        case DIRECTIONS.UP:
           this.pos.y -= this.speed; break;
-        case this.DIRECTIONS.DOWN:
+        case DIRECTIONS.DOWN:
           this.pos.y += this.speed; break;
-        case this.DIRECTIONS.LEFT:
+        case DIRECTIONS.LEFT:
           this.pos.x -= this.speed; break;
-        case this.DIRECTIONS.RIGHT:
+        case DIRECTIONS.RIGHT:
           this.pos.x += this.speed; break;
 
         }
