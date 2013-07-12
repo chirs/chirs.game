@@ -53,17 +53,20 @@
       for (var i=0; i < 20; i++){
         var x = Math.random() * width;
         var y = Math.random() * height;
-        this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
+        this.coquette.entities.create(Adversary, { 
+                pos:{ x:x, y:y },
+                maxPos: {  x: width, y: height },
+                    }); 
       };
-
-
+        
 
 
       this.coquette.entities.create(Person, { 
         game: self,
-        pos:{ x:249, y:110 }, 
         color:"#f07", // player
 
+        pos:{ x:249, y:110 }, 
+        maxPos: {  x: width, y: height },
 
         SHOOT_DELAY: 300,
         lastShot: 0,
@@ -104,6 +107,22 @@
               this.pos.y += dir[1];
             }
           }
+
+          // check x out-of-bounds
+          if (this.pos.x > this.maxPos.x) {
+              this.pos.x = -this.size.x;
+          } else if (this.pos.x < -this.size.x) {
+              this.pos.x = this.maxPos.x;
+          }
+
+          // check y out-of-bounds
+          if (this.pos.y > this.maxPos.y) {
+              this.pos.y = -this.size.y;
+          } else if (this.pos.y < -this.size.y) {
+              this.pos.y = this.maxPos.y;
+          }
+
+
           
           for (key in bullets){
             if (self.coquette.inputter.state(self.coquette.inputter[key])){
@@ -133,6 +152,8 @@
         this[i] = settings[i];
       }
       this.size = { x:9, y:9 };
+      this.maxPos = settings.maxPos;
+
       this.draw = function(ctx) {
         ctx.fillStyle = settings.color;
         ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
@@ -210,6 +231,22 @@
         var my = this.vel.y * tick;
         this.pos.x += mx;
         this.pos.y += my;
+
+          // check x out-of-bounds
+          if (this.pos.x > this.maxPos.x) {
+              this.pos.x = -this.size.x;
+          } else if (this.pos.x < -this.size.x) {
+              this.pos.x = this.maxPos.x;
+          }
+
+          // check y out-of-bounds
+          if (this.pos.y > this.maxPos.y) {
+              this.pos.y = -this.size.y;
+          } else if (this.pos.y < -this.size.y) {
+              this.pos.y = this.maxPos.y;
+          }
+
+
         
         //if (!this.game.coquette.renderer.onScreen(this)) {
         //  this.kill();
