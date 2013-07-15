@@ -41,7 +41,63 @@
         color: "#ccc",
         direction: DIRECTIONS.LEFT,
         speed: 2,
+      });
 
+    
+
+      // Ghosts.
+      var GHOSTS = ["red", "green", "blue", "purple"]
+
+      for (var i=0; i < 4; i++){
+        this.coquette.entities.create(Ghost, { pos:{ x:200, y:200 }, color: GHOSTS[i]}); 
+      };
+
+      // Blocks
+
+      var BLOCKS = [
+        {color: "#999", pos: {x: 100, y: 100 }, size: {x: 10, y: 300}},
+        {color: "#999", pos: {x: 300, y: 300 }, size: {x: 10, y: 200}},
+        {color: "#999", pos: {x: 400, y: 100 }, size: {x: 10, y: 400}},
+      ]
+
+      //this.coquette.entities.create(Block, BLOCKS[0])
+
+      for (var i=0; i < BLOCKS.length; i++){
+        this.coquette.entities.create(Block, BLOCKS[i])
+      };
+    };
+
+    Game.prototype =  {
+      draw: function(ctx) {
+
+        if (this.state === STATE.LOSE){}
+
+        ctx.lineWidth=1;
+        ctx.fillStyle = "#390";
+        ctx.font = "18px sans-serif";
+        ctx.fillText("Score: " + this.score, 20, 20);
+
+      }
+
+    };
+
+
+
+    // Pacman
+    
+    var Pacman = function(game, settings) {
+      for (var i in settings) {
+        this[i] = settings[i];
+      }
+      this.size = { x:20, y:20 };
+      this.draw = function(ctx) {
+        ctx.fillStyle = settings.color;
+        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+      };
+    };
+
+
+    Pacman.prototype = {
         update: function() {
           var keys = {
             'UP_ARROW': DIRECTIONS.UP,
@@ -51,7 +107,7 @@
           }
           
           for (key in keys){
-            if (self.coquette.inputter.state(self.coquette.inputter[key])){
+            if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
               this.direction = keys[key];
             };
           };
@@ -92,57 +148,7 @@
             self.state = STATE.LOSE;
           }
         }
-      });
 
-      // Ghosts.
-      var GHOSTS = ["red", "green", "blue", "purple"]
-
-      for (var i=0; i < 4; i++){
-        this.coquette.entities.create(Ghost, { pos:{ x:200, y:200 }, color: GHOSTS[i]}); 
-      };
-
-      // Blocks
-
-      var BLOCKS = [
-        {color: "#999", pos: {x: 100, y: 100 }, width: 100, height: 200},
-        {color: "#999", pos: {x: 300, y: 100 }, width: 200, height: 200},
-        {color: "#999", pos: {x: 400, y: 100 }, width: 100, height: 400}
-      ]
-
-      //this.coquette.entities.create(Block, BLOCKS[0])
-
-      //for (var i=0; i < BLOCKS.length; i++){
-      //  this.coquette.entities.create(Block, BLOCKS[i])
-      //};
-    };
-
-    Game.prototype =  {
-      draw: function(ctx) {
-
-        if (this.state === STATE.LOSE){}
-
-        ctx.lineWidth=1;
-        ctx.fillStyle = "#390";
-        ctx.font = "18px sans-serif";
-        ctx.fillText("Score: " + this.score, 20, 20);
-
-      }
-
-    };
-
-
-
-    // Pacman
-    
-    var Pacman = function(game, settings) {
-      for (var i in settings) {
-        this[i] = settings[i];
-      }
-      this.size = { x:20, y:20 };
-      this.draw = function(ctx) {
-        ctx.fillStyle = settings.color;
-        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-      };
     };
 
 
@@ -153,8 +159,17 @@
       for (var i in settings) {
         this[i] = settings[i];
       }
-      this.height = 20;
-      this.width = 20;
+    }
+
+    Block.prototype = {
+      draw: function(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+      },
+
+      collision: function(other) {
+        other.direction = null;
+      }
     }
 
     // Ghosts 
