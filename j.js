@@ -3,19 +3,19 @@
   $(document).ready(function() {
 
     var DIRECTIONS = {
-        UP: 0,
-        RIGHT: 1,
-        DOWN: 2,
-        LEFT: 3,
+      UP: 0,
+      RIGHT: 1,
+      DOWN: 2,
+      LEFT: 3,
     };
 
     var STATE = {
-        PLAY: 0,
-        LOSE: 1
+      PLAY: 0,
+      LOSE: 1,
+      WIN: 2,
     }
 
     var loaded = false;
-
 
     var Game = function(canvasId, width, height) {
       var self = this
@@ -43,8 +43,6 @@
         speed: 2,
       });
 
-    
-
       // Ghosts.
       var GHOSTS = ["red", "green", "blue", "purple"]
 
@@ -60,8 +58,6 @@
         {color: "#999", pos: {x: 400, y: 100 }, size: {x: 10, y: 400}},
       ]
 
-      //this.coquette.entities.create(Block, BLOCKS[0])
-
       for (var i=0; i < BLOCKS.length; i++){
         this.coquette.entities.create(Block, BLOCKS[i])
       };
@@ -69,13 +65,23 @@
 
     Game.prototype =  {
       draw: function(ctx) {
-
-        if (this.state === STATE.LOSE){}
-
         ctx.lineWidth=1;
         ctx.fillStyle = "#390";
         ctx.font = "18px sans-serif";
         ctx.fillText("Score: " + this.score, 20, 20);
+
+
+        ctx.font = "30px sans-serif";
+        ctx.fillStyle = "#ccc";
+
+        if (this.state === STATE.LOSE){
+          ctx.fillText("YOU LOSE!", 100, 100);
+        }
+        if (this.state === STATE.WIN){
+          ctx.fillText("YOU WIN!", 100, 100);
+        }
+          
+
 
       }
 
@@ -145,7 +151,7 @@
             other.eat();
           }
           if (other instanceof Ghost){
-            self.state = STATE.LOSE;
+            this.game.state = STATE.LOSE;
           }
         }
 
@@ -191,7 +197,11 @@
 
       eat: function() {
         this.game.score += this.value;
+        this.game.pillsEaten += 1;
         this.game.coquette.entities.destroy(this);
+        if (this.game.pillsEaten === this.game.pills){
+          this.game.state = STATE.WIN;
+        };
       },
 
     }
