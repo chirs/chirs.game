@@ -38,9 +38,6 @@
       this.coquette.entities.create(Pacman, { 
         game: self,
         pos: { x: 249, y: 110 },
-        color: "#ccc",
-        direction: DIRECTIONS.LEFT,
-        speed: 2,
       });
 
       // Ghosts.
@@ -80,87 +77,82 @@
         if (this.state === STATE.WIN){
           ctx.fillText("YOU WIN!", 100, 100);
         }
-          
-
-
       }
-
     };
 
 
-
-    // Pacman
-    
     var Pacman = function(game, settings) {
+
+      this.color = "#ccc";
+      this.direction = DIRECTIONS.LEFT;
+      this.speed = 2;
+      this.size = { x:20, y:20 };
+
       for (var i in settings) {
         this[i] = settings[i];
       }
-      this.size = { x:20, y:20 };
-      this.draw = function(ctx) {
-        ctx.fillStyle = settings.color;
-        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-      };
     };
 
 
     Pacman.prototype = {
-        update: function() {
-          var keys = {
-            'UP_ARROW': DIRECTIONS.UP,
-            'DOWN_ARROW': DIRECTIONS.DOWN,
-            'LEFT_ARROW': DIRECTIONS.LEFT,
-            'RIGHT_ARROW': DIRECTIONS.RIGHT,
-          }
-          
-          for (key in keys){
-            if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
-              this.direction = keys[key];
-            };
-          };
+      draw: function(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+      },
 
-          switch (this.direction) {
-          case DIRECTIONS.UP:
-            this.pos.y -= this.speed; break;
-          case DIRECTIONS.DOWN:
-            this.pos.y += this.speed; break;
-          case DIRECTIONS.LEFT:
-            this.pos.x -= this.speed; break;
-          case DIRECTIONS.RIGHT:
-            this.pos.x += this.speed; break;
-          }
-
-          // check x out-of-bounds
-          if (this.pos.x >= this.game.width) {
-            this.direction = null;
-          } else if (this.pos.x <= 0) {
-            this.direction = null;
-          }
-
-          // check x out-of-bounds
-          if (this.pos.y >= this.game.height) {
-            this.direction = null;
-          } else if (this.pos.y <= 0) {
-            this.direction = null;
-          }
-
-
-        },
-
-        collision: function(other) {
-          if (other instanceof Pill){
-            other.eat();
-          }
-          if (other instanceof Ghost){
-            this.game.state = STATE.LOSE;
-          }
+      update: function() {
+        var keys = {
+          'UP_ARROW': DIRECTIONS.UP,
+          'DOWN_ARROW': DIRECTIONS.DOWN,
+          'LEFT_ARROW': DIRECTIONS.LEFT,
+          'RIGHT_ARROW': DIRECTIONS.RIGHT,
         }
+        
+        for (key in keys){
+          if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
+            this.direction = keys[key];
+          };
+        };
+
+        switch (this.direction) {
+        case DIRECTIONS.UP:
+          this.pos.y -= this.speed; break;
+        case DIRECTIONS.DOWN:
+          this.pos.y += this.speed; break;
+        case DIRECTIONS.LEFT:
+          this.pos.x -= this.speed; break;
+        case DIRECTIONS.RIGHT:
+          this.pos.x += this.speed; break;
+        }
+        
+        // check x out-of-bounds
+        if (this.pos.x >= this.game.width) {
+          this.direction = null;
+        } else if (this.pos.x <= 0) {
+          this.direction = null;
+        }
+
+        // check x out-of-bounds
+        if (this.pos.y >= this.game.height) {
+          this.direction = null;
+        } else if (this.pos.y <= 0) {
+          this.direction = null;
+        }
+
+      },
+
+      collision: function(other) {
+        if (other instanceof Pill){
+          other.eat();
+        }
+        if (other instanceof Ghost){
+          this.game.state = STATE.LOSE;
+        }
+      }
 
     };
 
 
-
-    // Block
-    
     var Block = function(game, settings) {
       for (var i in settings) {
         this[i] = settings[i];
@@ -178,16 +170,12 @@
       }
     }
 
-    // Ghosts 
-
-
     var Pill = function(game, settings){
       this.value = 10
       this.game = game
       this.pos = settings.pos;
       this.size = { height:10, width:10 };
     };
-
 
     Pill.prototype = {
       draw: function(ctx) {
@@ -206,6 +194,7 @@
 
     }
 
+
     var Ghost = function(game, settings){
       this.game = game
       for (var i in settings) {
@@ -219,7 +208,6 @@
       this.direction = DIRECTIONS.RIGHT;
       this.speed = 2;
     };
-
 
     Ghost.prototype = {
 
@@ -240,8 +228,6 @@
         this.game.coquette.entities.destroy(this);
       },
 
-
-      
       update: function(tick) {
         if ((this.shielded === false) && (Math.random() < .01)){
           this.shielded = true;
@@ -279,8 +265,6 @@
           } else if (this.pos.y <= -this.size.y) {
             this.direction = null;
           }
-
-
         }
 
       }
