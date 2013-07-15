@@ -9,60 +9,23 @@
         LEFT: 3,
     };
 
-    
-    var loaded = false;
-
-    var plusMinus = function(){
-      if (Math.random() < .5){
-        return -1;
-      }
-      return 1;
+    var STATE = {
+        PLAY: 0,
+        LOSE: 1
     }
 
-    var timePassed = function(last, interval) { return last + interval < new Date().getTime(); };
-    
-    var center = function(obj) {
-      if(obj.pos !== undefined) {
-        return {
-          x: obj.pos.x + (obj.size.x / 2),
-          y: obj.pos.y + (obj.size.y / 2),
-        };
-      }
-    };
-
-    var getCollidingEntities = function(collisions, entity){
-      var entities = []
-      for (var i=0; i < collisions.length; i++){
-        var colliding = collisions[i];
-        if (colliding[0] === entity){
-          entities.push(colliding[1]);
-        };
-        if (colliding[1] === entity){
-          entities.push(colliding[0]);
-        };
-      }
-      return entities;
-    };
+    var loaded = false;
 
 
     var Game = function(canvasId, width, height) {
       var self = this
       this.coquette = new Coquette(this, canvasId, width, height, "#000");
-
-
-      // State management.
-      this.STATE = {
-        PLAY: 0,
-        LOSE: 1
-      }
-
-      this.state = this.STATE.PLAY
-
-
+      this.state = STATE.PLAY
       this.score = 0;
-      this.pills = 10;
+      this.pills = 20;
       this.pillsEaten = 0;
-
+      this.width = width;
+      this.height = height
 
       for (var i=0; i < this.pills; i++){
         var x = Math.random() * width;
@@ -77,7 +40,7 @@
         pos: { x: 249, y: 110 },
         color: "#ccc",
         direction: DIRECTIONS.LEFT,
-        speed: 1,
+        speed: 2,
 
         update: function() {
           var keys = {
@@ -103,16 +66,30 @@
           case DIRECTIONS.RIGHT:
             this.pos.x += this.speed; break;
           }
-        },
 
+          // check x out-of-bounds
+          if (this.pos.x >= this.game.width) {
+            this.direction = null;
+          } else if (this.pos.x <= 0) {
+            this.direction = null;
+          }
+
+          // check x out-of-bounds
+          if (this.pos.y >= this.game.height) {
+            this.direction = null;
+          } else if (this.pos.y <= 0) {
+            this.direction = null;
+          }
+
+
+        },
 
         collision: function(other) {
           if (other instanceof Pill){
             other.eat();
           }
-
           if (other instanceof Ghost){
-                self.state = self.STATE.LOSE;
+            self.state = STATE.LOSE;
           }
         }
       });
@@ -127,25 +104,22 @@
       // Blocks
 
       var BLOCKS = [
-        //{color: "#999", pos: {x: 100, y: 100 }, width: 100, height: 200},
-        //{color: "#999", pos: {x: 300, y: 100 }, width: 100, height: 200},
-        //{color: "#999", pos: {x: 400, y: 100 }, width: 100, height: 200}
-        {color: "#999", pos: {x: 400, y: 100 }}
+        {color: "#999", pos: {x: 100, y: 100 }, width: 100, height: 200},
+        {color: "#999", pos: {x: 300, y: 100 }, width: 200, height: 200},
+        {color: "#999", pos: {x: 400, y: 100 }, width: 100, height: 400}
       ]
+
+      //this.coquette.entities.create(Block, BLOCKS[0])
 
       //for (var i=0; i < BLOCKS.length; i++){
       //  this.coquette.entities.create(Block, BLOCKS[i])
       //};
-      
-
-
     };
 
     Game.prototype =  {
       draw: function(ctx) {
 
-        if (this.state === this.STATE.LOSE){
-        }
+        if (this.state === STATE.LOSE){}
 
         ctx.lineWidth=1;
         ctx.fillStyle = "#390";
@@ -181,24 +155,7 @@
       }
       this.height = 20;
       this.width = 20;
-      //this.height = settings.height;
-      //this.width = settings.width;
-      this.draw = function(ctx) {
-        ctx.fillStyle = settings.color;
-        //ctx.fillRect(this.pos.x, this.pos.y, this.height, this.width);
-        ctx.fillRect(this.pos.x, this.pos.y, 20, 20);
-      };
-    };
-
-    Block.prototype = {
-
-      collision: function(other) {
-        other.direction = null;
-      }
-      
     }
-      
-
 
     // Ghosts 
 
@@ -235,7 +192,7 @@
       this.shielded = false;
       this.shieldTime = new Date();
       this.direction = DIRECTIONS.RIGHT;
-      this.speed = 1;
+      this.speed = 2;
     };
 
 
@@ -283,6 +240,21 @@
           this.pos.x -= this.speed; break;
         case DIRECTIONS.RIGHT:
           this.pos.x += this.speed; break;
+
+        // check x out-of-bounds
+          if (this.pos.x >= this.game.width) {
+            this.direction = null;
+          } else if (this.pos.x <= -this.size.x) {
+            this.direction = null;
+          }
+
+        // check x out-of-bounds
+          if (this.pos.y >= this.game.height) {
+            this.direction = null;
+          } else if (this.pos.y <= -this.size.y) {
+            this.direction = null;
+          }
+
 
         }
 
