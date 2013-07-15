@@ -174,13 +174,13 @@
       this.value = 10
       this.game = game
       this.pos = settings.pos;
-      this.size = { height:10, width:10 };
+      this.size = { y:10, x:12 };
     };
 
     Pill.prototype = {
       draw: function(ctx) {
         ctx.fillStyle = "#777";
-        ctx.fillRect(this.pos.x, this.pos.y, this.size.height, this.size.width);
+        ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
       },
 
       eat: function() {
