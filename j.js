@@ -49,11 +49,7 @@
 
       // Blocks
 
-      var BLOCKS = [
-        {color: "#999", pos: {x: 100, y: 100 }, size: {x: 10, y: 300}},
-        {color: "#999", pos: {x: 300, y: 300 }, size: {x: 10, y: 200}},
-        {color: "#999", pos: {x: 400, y: 100 }, size: {x: 10, y: 400}},
-      ]
+      var BLOCKS = this.generateBlocks();
 
       for (var i=0; i < BLOCKS.length; i++){
         this.coquette.entities.create(Block, BLOCKS[i])
@@ -67,17 +63,40 @@
         ctx.font = "18px sans-serif";
         ctx.fillText("Score: " + this.score, 20, 20);
 
-
         ctx.font = "30px sans-serif";
         ctx.fillStyle = "#ccc";
 
         if (this.state === STATE.LOSE){
-          ctx.fillText("YOU LOSE!", 100, 100);
+          ctx.fillText("GAME OVER!", 100, 100);
         }
         if (this.state === STATE.WIN){
           ctx.fillText("YOU WIN!", 100, 100);
         }
+      },
+
+      generateBlock: function() {
+        x = Math.floor(Math.random() * 1200);
+        y = Math.floor(Math.random() * 800);
+        vertical = Math.random() > .5
+        length = Math.random()  * 300 + 30;
+        if (vertical){
+          var size = {x: 10, y: length }
+        } else {
+          var size = {x: length, y: 10 }
+        }
+        return { color: "#999", pos: {x: x, y: y}, size: size }
+      },
+
+      generateBlocks: function() {
+        var l = []
+        var count = Math.floor(20 * Math.random()) + 10;
+        for (var i=0; i < count; i++){
+          l.push(this.generateBlock());
+        }
+        console.log(l);
+        return l
       }
+
     };
 
 
@@ -179,7 +198,7 @@
 
     Pill.prototype = {
       draw: function(ctx) {
-        ctx.fillStyle = "#777";
+        ctx.fillStyle = "#09c";
         ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
       },
 

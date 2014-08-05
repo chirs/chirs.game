@@ -13,14 +13,26 @@ div#game {
     //width: 50%;
     height: 100%;
     width: 100%;
-    color: #dee;
-    background-color: #0cf;
+
+    //background-color: #0cf;
+    background-color: #33333;
+
 }
 
 div#game #title {
     position: absolute;
     text-align: center;
     font-size: 6em;
+    color: #999;
+    font-family: monospace;
+    width: 600px;
+    height: 100px;
+    top: 50%;
+    left: 50%;
+    margin-left: -300px; /* margin is -0.5 * dimension */
+    margin-top: -50px; 
+    border: 5px solid black;
+
 }
 
 
