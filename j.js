@@ -26,6 +26,9 @@
       this.pillsEaten = 0;
       this.width = width;
       this.height = height
+      
+      //console.log(width)
+      //console.log(height)
 
       for (var i=0; i < this.pills; i++){
         var x = Math.random() * width;
@@ -68,10 +71,17 @@
 
         if (this.state === STATE.LOSE){
           ctx.fillText("GAME OVER!", 100, 100);
+          //this.showMessage(ctx, "GAME OVER");
         }
+
+
         if (this.state === STATE.WIN){
           ctx.fillText("YOU WIN!", 100, 100);
         }
+      },
+
+      showMessage: function(ctx, text){
+        ctx.fillText(text, this.height / 2, this.width / 2);
       },
 
       generateBlock: function() {
@@ -93,7 +103,6 @@
         for (var i=0; i < count; i++){
           l.push(this.generateBlock());
         }
-        console.log(l);
         return l
       }
 
@@ -146,16 +155,20 @@
         
         // check x out-of-bounds
         if (this.pos.x >= this.game.width) {
-          this.direction = null;
+          //this.direction = null;
+          this.pos.x = 0;
         } else if (this.pos.x <= 0) {
-          this.direction = null;
+          //this.direction = null;
+          this.pos.x = this.game.width;
         }
 
-        // check x out-of-bounds
+        // check y out-of-bounds
         if (this.pos.y >= this.game.height) {
-          this.direction = null;
+          //this.direction = null;
+          this.pos.y = 0;
         } else if (this.pos.y <= 0) {
-          this.direction = null;
+          //this.direction = null;
+          this.pos.y = this.game.height;
         }
 
       },
@@ -215,7 +228,7 @@
 
 
     var Ghost = function(game, settings){
-      this.game = game
+      this.game = game;
       for (var i in settings) {
         this[i] = settings[i];
       }
@@ -224,7 +237,8 @@
 
       this.shielded = false;
       this.shieldTime = new Date();
-      this.direction = DIRECTIONS.RIGHT;
+      //this.direction = DIRECTIONS.RIGHT;
+      this.direction = null;
       this.speed = 2;
     };
 
@@ -257,10 +271,14 @@
           this.shielded = false;
         };
 
-        if (Math.random() < .1){
-          this.direction = Math.floor(Math.random() * 4);
-        };
+        //if (Math.random() < .1){
+          //this.direction = Math.floor(Math.random() * 4);
+        //};
 
+        if (this.direction == null){
+          this.direction = Math.floor(Math.random() * 4)
+        }
+        
         switch (this.direction) {
         case DIRECTIONS.UP:
           this.pos.y -= this.speed; break;
@@ -270,24 +288,31 @@
           this.pos.x -= this.speed; break;
         case DIRECTIONS.RIGHT:
           this.pos.x += this.speed; break;
-
-        // check x out-of-bounds
-          if (this.pos.x >= this.game.width) {
-            this.direction = null;
-          } else if (this.pos.x <= -this.size.x) {
-            this.direction = null;
-          }
-
-        // check x out-of-bounds
-          if (this.pos.y >= this.game.height) {
-            this.direction = null;
-          } else if (this.pos.y <= -this.size.y) {
-            this.direction = null;
-          }
         }
+
+        // check x out-of-bounds
+        if (this.pos.x >= this.game.width) {
+          //this.direction = null;
+          this.pos.x = 0;
+        } else if (this.pos.x <= 0) {
+          //this.direction = null;
+          this.pos.x = this.game.width;
+        }
+
+        // check y out-of-bounds
+        if (this.pos.y >= this.game.height) {
+          //this.direction = null;
+          this.pos.y = 0;
+        } else if (this.pos.y <= 0) {
+          //this.direction = null;
+          this.pos.y = this.game.height;
+        }
+
 
       }
     }
+
+
 
   
     // Play
