@@ -2,41 +2,41 @@ What kinds of games to make?
 
 Simple games:
 
-pong.
-asteroids
-pac-man
-missile command
+* pong
+* asteroids
+* pac-man
+* missile command
 
 
 Game types
 
 
-Tetris / (
-Wii Sports
-Oregon Trail
-Minecraft
-Super Mario Bros / Sonic the He
-Mario Kart
-Grand Theft Auto
-Call of Duty
-Sims
-Elder Scrolls
+* Tetris / (
+* Wii Sports
+* Oregon Trail
+* Minecraft
+* Super Mario Bros / Sonic the He
+* Mario Kart
+* Grand Theft Auto
+* Call of Duty
+* Sims
+* Elder Scrolls
 
-Pac-Man
-Pitfall!
-Asteroids
-Missile Command
-Space Invaders
+* Pac-Man
+* Pitfall!
+* Asteroids
+* Missile Command
+* Space Invaders
 
-Donkey Kong
+* Donkey Kong
 
-Baseball
-Soccer
+* Baseball
+* Soccer
 
-Mattel Electronics basketball
-Zelda
-TMNT
-Metroid
-Punch-Out
-Street Fighter
-Super Smash Bros
+* Mattel Electronics basketball
+* Zelda
+* TMNT
+* Metroid
+* Punch-Out
+* Street Fighter
+* Super Smash Bros

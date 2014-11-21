@@ -1,0 +1,19 @@
+
+
+server {
+            listen   80;
+            server_name  www.chirs.name;
+            rewrite ^/(.*) http://chirs.name/$1 permanent;
+           }
+
+server {
+
+            listen   80;
+            server_name chirs.name;
+
+            location / {
+                        root   /home/chris/www/chirs.game/src/;
+                        index  index.html;
+                        }
+
+}
