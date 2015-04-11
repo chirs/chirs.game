@@ -4,6 +4,7 @@
     
     var loaded = false;
 
+    // Like flipping a coin.
     var plusMinus = function(){
       if (Math.random() < .5){
         return -1;
@@ -13,6 +14,7 @@
 
     var timePassed = function(last, interval) { return last + interval < new Date().getTime(); };
     
+    // find the center (of a rectangle?)
     var center = function(obj) {
       if(obj.pos !== undefined) {
         return {
@@ -22,6 +24,7 @@
       }
     };
 
+    // Find all entities that are colliding.
     var getCollidingEntities = function(collisions, entity){
       var entities = []
       for (var i=0; i < collisions.length; i++){
@@ -38,7 +41,9 @@
 
 
     var Game = function(canvasId, width, height) {
-      var self = this
+
+      var self = this // save for reference.
+
       this.coquette = new Coquette(this, canvasId, width, height, "#000");
 
       this.score = 0
@@ -58,12 +63,10 @@
 
 
 
-
       this.coquette.entities.create(Person, { 
         game: self,
         pos:{ x:249, y:110 }, 
-        color:"#f07", // player
-
+        color:"#f00", // red
 
         SHOOT_DELAY: 300,
         lastShot: 0,
@@ -163,20 +166,39 @@
     Game.prototype =  {
       draw: function(ctx) {
 
-        if (this.state === this.STATE.LOSE){
-          ctx.fillStyle = "#fff"
-          ctx.fillRect(0, 0, 500, 500);
-          ctx.lineWidth=1;
-          ctx.fillStyle = "#ccc"
-          ctx.font = "44px sans-serif";
 
-          ctx.fillText("game over", 700, 100);
+         if (this.coquette.entities.all(Adversary).length == 0){
+	     this.stat = this.STATE.WIN
+
+             ctx.fillStyle = "#ccc"
+             ctx.fillRect(0, 0, 1020, 1020);
+             ctx.lineWidth=1;
+             ctx.fillStyle = "#666"
+
+             ctx.font = "44px sans-serif";
+             ctx.fillText("you win", 400, 100);
+
+             ctx.font = "22px sans-serif";          
+             ctx.fillText("play again", 400, 140);
+	     
+	     
+	     }
+	  
+        if (this.state === this.STATE.LOSE){
+          ctx.fillStyle = "#ccc"
+          ctx.fillRect(0, 0, 1020, 1020);
+          ctx.lineWidth=1;
+          ctx.fillStyle = "#666"
+
+          ctx.font = "44px sans-serif";
+          ctx.fillText("game over", 400, 100);
+
           ctx.font = "22px sans-serif";          
-          ctx.fillText("play again", 700, 140);
+          ctx.fillText("play again", 400, 140);
         };
 
         ctx.lineWidth=1;
-        ctx.fillStyle = "#390";
+        ctx.fillStyle = "#fff";
         ctx.font = "18px sans-serif";
         ctx.fillText("Score: " + this.score, 20, 20);
 
@@ -192,8 +214,6 @@
         this[i] = settings[i];
       }
       this.size = { x:9, y:9 };
-
-
 
       this.shielded = false;
       this.shieldTime = new Date();
@@ -211,9 +231,9 @@
       
       color: function(){
         if (this.shielded){
-          return "#c3c";
+          return "#0f0";
         } else {
-          return "#09c";
+          return "#fff";
         }
       },
 
@@ -238,6 +258,14 @@
         var my = this.vel.y * tick;
         this.pos.x += mx;
         this.pos.y += my;
+
+	this.vel.x += .01 * Math.random() * Math.random() * plusMinus();
+	this.vel.y += .01 * Math.random() * Math.random() * plusMinus();
+
+        if (!this.game.coquette.renderer.onScreen(this)) {
+	    this.pos.x = 500;
+	    this.pos.y = 100;
+	  }
         
         //if (!this.game.coquette.renderer.onScreen(this)) {
         //  this.kill();
