@@ -61,8 +61,6 @@
         this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
       };
 
-
-
       this.coquette.entities.create(Person, { 
         game: self,
         pos:{ x:249, y:110 }, 
@@ -71,8 +69,8 @@
         SHOOT_DELAY: 300,
         lastShot: 0,
 
-        shootBullet: function(vector){
-          if (timePassed(this.lastShot, this.SHOOT_DELAY)) {
+          shootBullet: function(vector) {
+          if (timePassed(this.lastShot, this.SHOOT_DELAY) && (this.game.state !== this.game.STATE.LOSE) ) {
             var c = center(this);
             this.game.coquette.entities.create(Bullet, {
               pos: { x:c.x, y:c.y },
@@ -91,7 +89,7 @@
             'DOWN_ARROW': [0, speed],
             'LEFT_ARROW': [-speed, 0],
             'RIGHT_ARROW': [speed, 0],
-          }
+         } 
 
           var bullets = {
             'W': [0, -speed],
@@ -210,6 +208,7 @@
 
     var Adversary = function(game, settings){
       this.game = game
+      // shame
       for (var i in settings) {
         this[i] = settings[i];
       }
@@ -218,7 +217,6 @@
       this.shielded = false;
       this.shieldTime = new Date();
       this.vel = {x: makeVel(), y: makeVel()}
-
     };
     
 
@@ -241,9 +239,8 @@
         this.game.coquette.entities.destroy(this);
       },
 
-
-      
       update: function(tick) {
+        // shield or unshield the adversary	    
         if ((this.shielded === false) && (Math.random() < .01)){
           this.shielded = true;
           this.shieldTime = new Date()
@@ -253,7 +250,6 @@
           this.shielded = false;
         };
          
-        
         var mx = this.vel.x * tick;
         var my = this.vel.y * tick;
         this.pos.x += mx;
@@ -263,8 +259,12 @@
 	this.vel.y += .01 * Math.random() * Math.random() * plusMinus();
 
         if (!this.game.coquette.renderer.onScreen(this)) {
-	    this.pos.x = 500;
-	    this.pos.y = 100;
+	    //this.pos.x = 500;
+	    //this.pos.y = 100;
+	    //this.vel.x = .01 * Math.random() * plusMinus()
+	    //this.vel.y = .01 * Math.random() * plusMinus()
+	    this.vel.x = -1 * this.vel.x
+	    this.vel.y = -1 * this.vel.y	    
 	  }
         
         //if (!this.game.coquette.renderer.onScreen(this)) {
@@ -321,8 +321,7 @@
     }
   
     // Play
-
-    $("#game").click(function(){
+      $("#game").click(function(){
       if (loaded === false){
         loaded = true;
         var t = $(this)
@@ -334,4 +333,4 @@
 
   });
 
-}).call(this);
+})(window);
