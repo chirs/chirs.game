@@ -57,32 +57,51 @@
 	    
 	    this.state = this.STATE.PLAY
 
-
+	    for (var i=0; i < 20; i++){
+		var x = Math.random() * width;
+		var y = Math.random() * height;
+		this.coquette.entities.create(Pellet, { pos:{ x:x, y:y }}); // adversary
+	    };
+	    
 
 	    this.coquette.entities.create(Wall, {
 		game: self,
-		pos: {x: 25, y: 25 },
+		pos: {x: 20, y: 20 },
 		length: 300,
 		direction: 'x'
 	    })
 
 	    this.coquette.entities.create(Wall, {
 		game: self,
-		pos: {x: 625, y: 25 },
+		pos: {x: 120, y: 20 },
 		length: 300,
 		direction: 'x'
 	    })
 
 	    this.coquette.entities.create(Wall, {
 		game: self,
-		pos: {x: 25, y: 25 },
+		pos: {x: 220, y: 20 },
+		length: 300,
+		direction: 'x'
+	    })	    
+
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 600, y: 20 },
+		length: 300,
+		direction: 'x'
+	    })
+
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 20, y: 20 },
 		length: 600,
 		direction: 'y'
 	    })
 
 	    this.coquette.entities.create(Wall, {
 		game: self,
-		pos: {x: 25, y: 325 },
+		pos: {x: 20, y: 30 },
 		length: 600,
 		direction: 'y'
 	    })	    
@@ -122,8 +141,7 @@
 		    for (key in this.directions){
 			if (self.coquette.inputter.state(self.coquette.inputter[key])){
 			    this.direction = key;
-			    this.dir = this.directions[key]
-			    //var dir = directions[key]
+			    this.dir = this.directions[key]			    
 			}
 			if (this.dir){
 			    this.pos.x += this.dir[0];
@@ -138,8 +156,8 @@
 		collision: function(other) {
 
 		    if (other instanceof Wall){
-			this.direction = this.OPPOSITES[this.direction];
-			this.dir = this.directions[this.direction];
+			this.direction = undefined;
+			this.dir = [0, 0];
 		    }
 		    
 		}
@@ -166,12 +184,53 @@
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
-	    this.size = { x:9, y:54 };
-	    this.draw = function(ctx) {
-		ctx.fillStyle = settings.color;
-		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	    };
+	    this.size = { x:20, y:20 };
 	};
+
+	Person.prototype = {
+	    draw: function(ctx){
+		ctx.fillStyle = "#ff0"; this.color;
+		//ctx.arc(this.pos.x, this.pos.y, 10, 0, 2 * Math.PI);
+		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+		ctx.fill();		
+	    }
+	}
+
+
+	
+	var Pellet = function(game, settings) {
+	    for (var i in settings) {
+		this[i] = settings[i];
+	    }
+	    this.size = { x:10, y:10 };
+	    this.game = game;
+	};
+
+	Pellet.prototype = {
+	    draw: function(ctx){
+		ctx.fillStyle = "#fff"; this.color;
+		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+		ctx.fill();		
+	    },
+
+
+	    kill: function() {
+		this.game.coquette.entities.destroy(this);
+	    },
+
+	    
+            collision: function(other) {
+		if (other instanceof Person) {
+		    this.kill();
+		}
+
+		if (other instanceof Wall) {
+		    this.kill();
+		}		
+            },	    
+	    
+	    
+	}	
 
 	var Opponent = function(game, settings) {
 	    for (var i in settings) {
@@ -191,8 +250,9 @@
 	
 	Game.prototype =  {
 	    draw: function(ctx) {
+		ctx.fillRect(0, 0, 1020, 1020);
 		
-		
+		/*
 		if (this.state === this.STATE.LOSE){
 		    ctx.fillStyle = "#ccc"
 		    ctx.fillRect(0, 0, 1020, 1020);
@@ -210,6 +270,7 @@
 		ctx.fillStyle = "#fff";
 		ctx.font = "18px sans-serif";
 		ctx.fillText("Score: " + this.score, 20, 20);
+		*/
 		
 	    }
 	    
