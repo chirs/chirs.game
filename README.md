@@ -1,4 +1,23 @@
-What kinds of games to make?
+### Chirs.game
+
+Where names become games!
+
+Where games come to life! 
+
+
+The history of video games.
+
+What's easy or simple?
+
+How to do the most with the fewest rules?
+
+
+### Game history
+
+* spacewar
+* pong
+* pac-man
+* missile command
 
 Simple games:
 
