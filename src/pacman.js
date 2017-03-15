@@ -217,35 +217,20 @@
 	    
 	}	
 
-	var Opponent = function(game, settings) {
-	    for (var i in settings) {
-		this[i] = settings[i];
-	    }
-	    this.size = { x:9, y:108 };
-	    this.draw = function(ctx) {
-		ctx.fillStyle = settings.color;
-		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	    };
-	};	    
-	
-	var makeVel = function(){
-	    return (Math.random() - .5) / 10;
-	}
-	
 	
 	Game.prototype =  {
 	    draw: function(ctx) {
-		ctx.fillRect(0, 0, 1020, 1020);
-		
-		/*
-		if (this.state === this.STATE.LOSE){
+
+		if (this.coquette.entities.all(Pellet).length == 0){
+		    this.state = this.STATE.WIN;
+
 		    ctx.fillStyle = "#ccc"
 		    ctx.fillRect(0, 0, 1020, 1020);
 		    ctx.lineWidth=1;
 		    ctx.fillStyle = "#666"
 		    
 		    ctx.font = "44px sans-serif";
-		    ctx.fillText("game over", 400, 100);
+		    ctx.fillText("you win", 400, 100);
 		    
 		    ctx.font = "22px sans-serif";          
 		    ctx.fillText("play again", 400, 140);
@@ -255,8 +240,7 @@
 		ctx.fillStyle = "#fff";
 		ctx.font = "18px sans-serif";
 		ctx.fillText("Score: " + this.score, 20, 20);
-		*/
-		
+	
 	    }
 	    
 	};
@@ -287,7 +271,7 @@
 
 	Wall.prototype = {
 	    draw: function(ctx) {
-		ctx.fillStyle = "#ccc"
+		ctx.fillStyle = "#dbd"
 		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 	    },
 	};
