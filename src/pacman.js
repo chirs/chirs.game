@@ -12,6 +12,22 @@
 	    return 1;
 	}
 
+	var getWallEnd = function(pos, direction, length){
+	    if (direction == 'x'){
+		return { x: pos.x, y: pos.y + length };
+	    } else {
+		return { x: pos.x + length, y: pos.y };
+	    }
+	};
+
+	var oppositeDirection = function(d){
+	    if (d == 'x'){
+		return 'y';
+	    } else {
+		return 'x';
+	    }
+	};
+		    
 	
 	var timePassed = function(last, interval) { return last + interval < new Date().getTime(); };
 	
@@ -63,35 +79,45 @@
 		this.coquette.entities.create(Pellet, { pos:{ x:x, y:y }}); // adversary
 	    };
 
+
 	    for (var i=0; i < 20; i++){
+
 		var x = Math.random() * width;
-		var y = Math.random() * height;
+		var y = Math.random() * height;	    
+
+
 		var length = Math.random() * height / 4;
 		if (Math.random() > .5){
 		    var direction = 'x';
 		} else {
 		    var direction = 'y';
 		}
+
+		var pos = { x: x, y: y }
+
+		this.coquette.entities.create(Wall, {
+		    game: self,
+		    pos: pos,
+		    length: length,
+		    direction: direction 
+		})
+
+		var nPos = getWallEnd(pos, direction, length);
+
+		var length = Math.random() * height / 4;
 		
+		var x = nPos.x
+		var y = nPos.y
+
 		this.coquette.entities.create(Wall, {
 		    game: self,
 		    pos: { x: x, y: y },
 		    length: length,
-		    direction: direction
-		})
+		    direction: oppositeDirection(direction)
+		})		
 
 	    };	    
 	    
-	    /*
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 20, y: 30 },
-		length: 600,
-		direction: 'y'
-	    })	    
-	    */
-
-
 	    
 	    this.coquette.entities.create(Person, { 
 		game: self,
@@ -104,7 +130,6 @@
 		
 		
 		update: function() {
-		    var speed = 2;
 
 		    var speed = 2;
 
