@@ -66,49 +66,6 @@
 		this.coquette.entities.create(Ball, { pos:{ x:x, y:y }}); // adversary
 	    };
 
-	    var walls = [
-		[25, 25, 300, 'x'],
-		[25, 25, 800, 'y'],
-		[85, 25, 300, 'x'],
-		[25, 325, 800, 'y']
-	    ]
-
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 25 },
-		length: 300,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 125, y: 25 },
-		length: 300,
-		direction: 'x'
-	    })	    
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 25 },
-		length: 400,
-		direction: 'y'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 325, y: 25 },
-		length: 400,
-		direction: 'y'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 425 },
-		length: 300,
-		direction: 'x'
-	    })	    	  	    
-
 	    
 	    this.coquette.entities.create(Person, { 
 		game: self,
@@ -118,6 +75,18 @@
 		SHOOT_DELAY: 300,
 		lastShot: 0,
 		
+		shootBullet: function(vector) {
+		    if (timePassed(this.lastShot, this.SHOOT_DELAY) && (this.game.state !== this.game.STATE.LOSE) ) {
+			var c = center(this);
+			this.game.coquette.entities.create(Bullet, {
+			    pos: { x:c.x, y:c.y },
+			    vector: vector,
+			    owner: this,
+			});
+			
+			this.lastShot = new Date().getTime();
+		    }
+		},
 		
 		update: function() {
 		    var speed = 2;
@@ -126,6 +95,12 @@
 			'DOWN_ARROW': [0, speed],
 		    } 
 		    
+		    var bullets = {
+			'W': [0, -speed],
+			'S': [0, speed],
+			'D': [speed, 0],
+			'A': [-speed, 0],
+		    }
 		    
 		    for (key in directions){
 			if (self.coquette.inputter.state(self.coquette.inputter[key])){
@@ -134,7 +109,14 @@
 			    this.pos.y += dir[1];
 			}
 		    }
-
+		    
+		    for (key in bullets){
+			if (self.coquette.inputter.state(self.coquette.inputter[key])){
+			    var dir = bullets[key]
+			    var vel = {x: dir[0], y: dir[1] }
+			    this.shootBullet(vel);
+			}
+		    }
 		},
 		
 		
@@ -147,41 +129,6 @@
 		    }
 		}
 	    });
-
-	    
-	    this.coquette.entities.create(Opponent, { 
-		game: self,
-		pos:{ x:549, y:110 },
-		vel:{ x: 0, y: 1 },
-		color:"#0ff", // light blue
-		
-		SHOOT_DELAY: 300,
-		lastShot: 0,
-		
-		
-		update: function(tick) {
-		    var speed = 2;
-
-		    var my = this.vel.y * tick;
-		    this.pos.y += my;
-		    this.vel.y += .01 * Math.random() * Math.random() * plusMinus();
-		
-		    if (!this.game.coquette.renderer.onScreen(this)) {
-			this.vel.y = -1 * this.vel.y	    		    
-
-		    }
-		},
-		
-		
-		collision: function(other) {
-		    if (other instanceof Ball){
-			console.log('help');
-			this.score += 1;
-			Game.score += 1;
-			other.vel.x = -1 * other.vel.x;
-		    }
-		}
-	    });	    
 	
 	};
 	
@@ -210,17 +157,6 @@
 		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 	    };
 	};
-
-	var Opponent = function(game, settings) {
-	    for (var i in settings) {
-		this[i] = settings[i];
-	    }
-	    this.size = { x:9, y:108 };
-	    this.draw = function(ctx) {
-		ctx.fillStyle = settings.color;
-		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	    };
-	};	    
 	
 	var makeVel = function(){
 	    return (Math.random() - .5) / 10;
@@ -279,27 +215,6 @@
 	};
 	
 	// Ball
-
-	var Wall = function(game, settings){
-	    this.game = game
-
-	    if (settings.direction == 'x'){
-		settings.size = {
-		    x: 10,
-		    y: settings.length
-		}
-	    } else {
-		settings.size = {
-		    x: settings.length,
-		    y: 10,
-		}
-	    }
-	    
-	    for (var i in settings) {
-		this[i] = settings[i];
-	    }
-
-	};
 	
 	var Ball = function(game, settings){
 	    this.game = game
@@ -309,14 +224,7 @@
 	    }
 	    this.size = { x:9, y:9 };
 
-	    this.vel = {x: 20 * makeVel(), y: 5 * makeVel()} // This is just a vector?
-	};
-
-	Wall.prototype = {
-	    draw: function(ctx) {
-		ctx.fillStyle = "#ccc"
-		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	    },
+	    this.vel = {x: 20 * makeVel(), y: makeVel()} // This is just a vector?
 	};
 	
 	
