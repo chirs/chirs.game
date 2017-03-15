@@ -63,7 +63,7 @@
 		//var y = Math.random() * height;
 		var x = width / 2;
 		var y = height / 2;
-		this.coquette.entities.create(Ball, { pos:{ x:x, y:y }}); // adversary
+		this.coquette.entities.create(Ball, { pos:{ x:x, y:y }}); // The Ball
 	    };
 
 	    var walls = [
@@ -77,37 +77,45 @@
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 25, y: 25 },
-		length: 300,
+		length: 100,
 		direction: 'x'
 	    })
 
 	    this.coquette.entities.create(Wall, {
 		game: self,
-		pos: {x: 125, y: 25 },
-		length: 300,
+		pos: {x: 25, y: 225 },
+		length: 100,
 		direction: 'x'
 	    })	    
 
 	    this.coquette.entities.create(Wall, {
 		game: self,
-		pos: {x: 25, y: 25 },
-		length: 400,
-		direction: 'y'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 325, y: 25 },
-		length: 400,
-		direction: 'y'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 425 },
-		length: 300,
+		pos: {x: 625, y: 25 },
+		length: 100,
 		direction: 'x'
-	    })	    	  	    
+	    })
+
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 625, y: 225 },
+		length: 100,
+		direction: 'x'
+	    })	    	    
+
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 25, y: 25 },
+		length: 600,
+		direction: 'y'
+	    })
+
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 25, y: 325 },
+		length: 600,
+		direction: 'y'
+	    })	    
+
 
 	    
 	    this.coquette.entities.create(Person, { 
@@ -148,7 +156,7 @@
 		}
 	    });
 
-	    
+	    /*
 	    this.coquette.entities.create(Opponent, { 
 		game: self,
 		pos:{ x:549, y:110 },
@@ -182,6 +190,7 @@
 		    }
 		}
 	    });	    
+	    */
 	
 	};
 	
@@ -278,7 +287,7 @@
 	    
 	};
 	
-	// Ball
+	// Wall
 
 	var Wall = function(game, settings){
 	    this.game = game
@@ -300,6 +309,17 @@
 	    }
 
 	};
+
+
+	Wall.prototype = {
+	    draw: function(ctx) {
+		ctx.fillStyle = "#ccc"
+		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+	    },
+	};
+
+
+	// Wall	
 	
 	var Ball = function(game, settings){
 	    this.game = game
@@ -311,13 +331,7 @@
 
 	    this.vel = {x: 20 * makeVel(), y: 5 * makeVel()} // This is just a vector?
 	};
-
-	Wall.prototype = {
-	    draw: function(ctx) {
-		ctx.fillStyle = "#ccc"
-		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	    },
-	};
+	
 	
 	
 	Ball.prototype = {
@@ -325,6 +339,16 @@
 	    draw: function(ctx) {
 		ctx.fillStyle = this.color();
 		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+	    },
+
+	    collision: function(other) {
+		if (other instanceof Wall){
+		    if (other.direction == 'x'){
+			this.vel.x = -1 * this.vel.x;
+		    } else {
+			this.vel.y = -1 * this.vel.y;
+		    }
+		}
 	    },
 	    
 	    color: function(){
@@ -346,12 +370,8 @@
 		this.pos.x += mx;
 		this.pos.y += my;
 		
-		//this.vel.x += .01 * Math.random() * Math.random() * plusMinus();
-		//this.vel.y += .01 * Math.random() * Math.random() * plusMinus();
-		
 		if (!this.game.coquette.renderer.onScreen(this)) {
-		    this.vel.x = -1 * this.vel.x
-		    this.vel.y = -1 * this.vel.y	    
+		    this.game.state = this.game.STATE.LOSE;
 		}
 		
 	    }
