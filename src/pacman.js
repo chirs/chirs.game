@@ -62,49 +62,34 @@
 		var y = Math.random() * height;
 		this.coquette.entities.create(Pellet, { pos:{ x:x, y:y }}); // adversary
 	    };
+
+	    for (var i=0; i < 20; i++){
+		var x = Math.random() * width;
+		var y = Math.random() * height;
+		var length = Math.random() * height / 4;
+		if (Math.random() > .5){
+		    var direction = 'x';
+		} else {
+		    var direction = 'y';
+		}
+		
+		this.coquette.entities.create(Wall, {
+		    game: self,
+		    pos: { x: x, y: y },
+		    length: length,
+		    direction: direction
+		})
+
+	    };	    
 	    
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 20, y: 20 },
-		length: 300,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 120, y: 20 },
-		length: 300,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 220, y: 20 },
-		length: 300,
-		direction: 'x'
-	    })	    
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 600, y: 20 },
-		length: 300,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 20, y: 20 },
-		length: 600,
-		direction: 'y'
-	    })
-
+	    /*
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 20, y: 30 },
 		length: 600,
 		direction: 'y'
 	    })	    
+	    */
 
 
 	    
