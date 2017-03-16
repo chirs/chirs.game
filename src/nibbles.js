@@ -197,6 +197,7 @@
 	    };
 
 
+	    // Check that the trail doesn't already exist.
 	    this.game.coquette.entities.create(Trail, { pos:{ x:this.pos.x, y:this.pos.y }}); // adversary
 		
 	};
@@ -217,20 +218,48 @@
 
 	// For doing grid-based operations.
 	// Should be an object.
-	var getGrid = function(pos){
-	    scale = 10; // 10x10 squares
-	    return [pos[0] / scale, pos[1] / scale]
+	var toGrid = function(pos){
+	    var scale = 10; // 10x10 squares
+	    return {
+		x: Math.round(pos.x / scale),
+		y: Math.round(pos.y / scale),
+	    }
 	};
 
+	var fromGrid = function(pos){
+	    var scale = 10;
+	    return {
+		x: 10 * pos.x,
+		y: 10 * pos.y
+	    }
+	}
 
 
 	var Trail = function(game, settings){
+
+	    settings.pos = fromGrid(toGrid(settings.pos));
+
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
 	    this.size = { x:20, y:20 };
 	    //this.length = 10;
 	    //this.trail = []
+	};
+
+	Trail.prototype.elements = []
+
+	Trail.prototype.checkDuplicate = function(pos){
+	    var gridded = fromGrid(toGrid(pos));
+	    for (var i=0; i < this.elements.length; i++){
+		var el = this.elements[i];
+		if (el.pos.x == gridded.x){
+		    if (el.pos.y == gridded.y){
+			return true;
+		    };
+		};
+	    };
+	    return false;
 	};
 
 	Trail.prototype.draw = function(ctx){
