@@ -80,42 +80,10 @@
 	    };
 
 
+
+	    //Create walls
 	    for (var i=0; i < 20; i++){
-
-		var x = Math.random() * width;
-		var y = Math.random() * height;	    
-
-
-		var length = Math.random() * height / 4;
-		if (Math.random() > .5){
-		    var direction = 'x';
-		} else {
-		    var direction = 'y';
-		}
-
-		var pos = { x: x, y: y }
-
-		this.coquette.entities.create(Wall, {
-		    game: self,
-		    pos: pos,
-		    length: length,
-		    direction: direction 
-		})
-
-		var nPos = getWallEnd(pos, direction, length);
-
-		var length = Math.random() * height / 4;
-		
-		var x = nPos.x
-		var y = nPos.y
-
-		this.coquette.entities.create(Wall, {
-		    game: self,
-		    pos: { x: x, y: y },
-		    length: length,
-		    direction: oppositeDirection(direction)
-		})		
-
+		createWall(width, height, this);
 	    };	    
 	    
 	    
@@ -130,6 +98,43 @@
 	    });
 	
 	};
+
+	var createWall = function(width, height, game){
+	    
+	    var x = Math.random() * width;
+	    var y = Math.random() * height;	    
+	    
+	    
+	    var length = Math.random() * height / 4;
+	    if (Math.random() > .5){
+		var direction = 'x';
+	    } else {
+		var direction = 'y';
+	    }
+	    
+	    var pos = { x: x, y: y }
+	    
+	    game.coquette.entities.create(Wall, {
+		game: self,
+		pos: pos,
+		length: length,
+		direction: direction 
+	    })
+	    
+	    var nPos = getWallEnd(pos, direction, length);
+	    
+	    var length = Math.random() * height / 4;
+	    
+	    var x = nPos.x
+	    var y = nPos.y
+	    
+	    game.coquette.entities.create(Wall, {
+		game: self,
+		pos: { x: x, y: y },
+		length: length,
+		direction: oppositeDirection(direction)
+	    })		
+	};	
 	
 	var Box = function(game, settings){
 	    this.size = settings.size || {height:9, width:9 };
