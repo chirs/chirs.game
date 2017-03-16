@@ -56,11 +56,6 @@
 	    
 	    this.state = this.STATE.PLAY
 
-	    for (var i=0; i < 20; i++){
-		var x = Math.random() * width;
-		var y = Math.random() * height;
-		this.coquette.entities.create(Pellet, { pos:{ x:x, y:y }}); // adversary
-	    };
 
 	    for (var i=0; i < 20; i++){
 		createWall(width, height, this);
@@ -165,8 +160,10 @@
 	    // Check that the trail doesn't already exist.
 	    if (trailExists(this.pos) == false){
 		var tt = this.game.coquette.entities.create(Tail, { pos:{ x:this.pos.x, y:this.pos.y }}); // adversary
-		if (trailExists.els.length > 20){
-		    var tt = this.game.coquette.entities.all(Tail).pop();
+
+		var tailPieces = this.game.coquette.entities.all(Tail)
+		if (tailPieces.length > 20){
+		    var tt = tailPieces.pop();
 		    this.game.coquette.entities.destroy(tt);
 		};
 	    }
@@ -193,14 +190,14 @@
 	}
 
 	trailExists.els = []
-	trailExists.els2 = []	
 
 	Person.prototype.collision = function(other) {
-	    if (other instanceof Wall){
-		this.kill();
-	    }
+	    //if (other instanceof Wall){
+		//this.game.playing = false;
+		//this.kill();
+	    //}
 	    //if (other instanceof Tail){
-		// this.kill();
+	    //this.kill();
 	    //}	    
 	};
 	
@@ -255,9 +252,6 @@
 	    ctx.fill();				
 	};
 
-
-
-	
 	var Pellet = function(game, settings) {
 	    for (var i in settings) {
 		this[i] = settings[i];
@@ -280,9 +274,12 @@
 
 	    
             collision: function(other) {
-		if (other instanceof Person) {
-		    this.kill();
-		}
+
+
+		//if (other instanceof Person) {
+		//    this.kill();
+		//}		
+
 
 		if (other instanceof Wall) {
 		    this.kill();
@@ -293,32 +290,56 @@
 	}	
 
 	
-	Game.prototype =  {
-	    draw: function(ctx) {
+	Game.prototype.draw = function(ctx){
 
-		if (this.coquette.entities.all(Pellet).length == 0){
-		    this.state = this.STATE.WIN;
-
-		    ctx.fillStyle = "#ccc"
-		    ctx.fillRect(0, 0, 1020, 1020);
-		    ctx.lineWidth=1;
-		    ctx.fillStyle = "#666"
-		    
-		    ctx.font = "44px sans-serif";
-		    ctx.fillText("you win", 400, 100);
-		    
-		    ctx.font = "22px sans-serif";          
-		    ctx.fillText("play again", 400, 140);
-		};
-		
-		ctx.lineWidth=1;
-		ctx.fillStyle = "#fff";
-		ctx.font = "18px sans-serif";
-		ctx.fillText("Score: " + this.score, 20, 20);
-	
-	    }
+	    if (this.coquette.entities.all(Pellet).length == 0){
+		this.state = this.STATE.WIN;
+		this.lose(ctx);
+	    };
 	    
+	    ctx.lineWidth=1;
+	    ctx.fillStyle = "#fff";
+	    ctx.font = "18px sans-serif";
+	    ctx.fillText("Score: " + this.score, 20, 20);
 	};
+
+	Game.prototype.lose = function(ctx){
+	    ctx.fillStyle = "#ccc"
+	    ctx.fillRect(0, 0, 1020, 1020);
+	    ctx.lineWidth=1;
+	    ctx.fillStyle = "#666"
+	    
+	    ctx.font = "44px sans-serif";
+	    ctx.fillText("game over", 400, 100);
+	    
+	    ctx.font = "22px sans-serif";          
+	    ctx.fillText("play again", 400, 140);	    
+	};
+	
+    
+
+	Game.prototype.startLevel = function(){
+	    if (this.playing == false){
+		this.level += 1;		
+		this.playing = true;
+
+		for (var i=0; i < 20; i++){
+		    var x = Math.random() * width;
+		    var y = Math.random() * height;
+		this.coquette.entities.create(Pellet, { pos:{ x:x, y:y }}); // adversary
+		};
+
+	    }
+	};
+
+	Game.prototype.update = function(ctx){
+	    if (this.coquette.entities.all(Pellet).length == 0){
+		this.playing = false;
+	    }
+	    if (this.coquette.inputter.state(this.coquette.inputter['R'])){
+		this.startLevel();
+	    };
+	};	
 	
 	// Wall
 
@@ -352,8 +373,6 @@
 	};
 
 
-	// Wall	
-	
 
 	var startGame = function(){
 	    if (loaded === false){
