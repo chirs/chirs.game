@@ -4,13 +4,6 @@
 
 	var loaded = false; // Game has been loaded?
 	
-	// 50/50 [coin flip]
-	var plusMinus = function(){
-	    if (Math.random() < .5){
-		return -1;
-	    }
-	    return 1;
-	}
 
 	var getWallEnd = function(pos, direction, length){
 	    if (direction == 'x'){
@@ -30,16 +23,6 @@
 		    
 	
 	var timePassed = function(last, interval) { return last + interval < new Date().getTime(); };
-	
-	// find the center of a rectangle
-	var center = function(obj) {
-	    if(obj.pos !== undefined) {
-		return {
-		    x: obj.pos.x + (obj.size.x / 2),
-		    y: obj.pos.y + (obj.size.y / 2),
-		};
-	    }
-	};
 	
 	// Find all entities that are colliding.
 	var getCollidingEntities = function(collisions, entity){
@@ -79,9 +62,6 @@
 		this.coquette.entities.create(Pellet, { pos:{ x:x, y:y }}); // adversary
 	    };
 
-
-
-	    //Create walls
 	    for (var i=0; i < 20; i++){
 		createWall(width, height, this);
 	    };	    
@@ -136,26 +116,12 @@
 	    })		
 	};	
 	
-	var Box = function(game, settings){
-	    this.size = settings.size || {height:9, width:9 };
-	    this.position = settings.position || {x:0, y:0 };
-	    this.color = setting.scolor || "#ccc";
-	    
-	    this.draw = function(ctx) {
-		ctx.fillStyle = "#fff"
-		ctx.fillRect(this.position.x0, this.position.y, this.size.height, this.size.width);
-		ctx.lineWidth=1;
-		ctx.fillStyle = "#ccc"
-		ctx.font = "44px sans-serif";
-	    }
-	    
-	};
 	
 	var Person = function(game, settings) {
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
-	    this.size = { x:20, y:20 };
+	    this.size = { x:10, y:10 };
 	};
 
 	Person.prototype.draw = function(ctx){
@@ -196,23 +162,46 @@
 		}
 	    };
 
-
 	    // Check that the trail doesn't already exist.
-	    this.game.coquette.entities.create(Trail, { pos:{ x:this.pos.x, y:this.pos.y }}); // adversary
-		
+	    if (trailExists(this.pos) == false){
+		var tt = this.game.coquette.entities.create(Tail, { pos:{ x:this.pos.x, y:this.pos.y }}); // adversary
+		if (trailExists.els.length > 20){
+		    var tt = this.game.coquette.entities.all(Tail).pop();
+		    this.game.coquette.entities.destroy(tt);
+		};
+	    }
 	};
     
-	
+	 
 	Person.prototype.kill = function() {
 	    this.game.coquette.entities.destroy(this);
 	};
 
+
+
+	var trailExists = function(pos){
+	    var np = toGrid(pos)
+	    for (var i=0; i < trailExists.els.length; i++){
+		var el = trailExists.els[i];
+		if (el.x == np.x){
+		    if (el.y == np.y){
+			return true;
+		    };
+		};
+	    };
+	    return false
+	}
+
+	trailExists.els = []
+	trailExists.els2 = []	
+
 	Person.prototype.collision = function(other) {
 	    if (other instanceof Wall){
-		//this.direction = undefined;
-		//this.dir = [0, 0];
 		this.kill();
 	    }
+	    //if (other instanceof Tail){
+		// this.kill();
+	    //}	    
 	};
 	
 
@@ -235,21 +224,19 @@
 	}
 
 
-	var Trail = function(game, settings){
+	var Tail = function(game, settings){
 
 	    settings.pos = fromGrid(toGrid(settings.pos));
 
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
-	    this.size = { x:20, y:20 };
-	    //this.length = 10;
-	    //this.trail = []
+	    this.size = { x:10, y:10 };
 	};
 
-	Trail.prototype.elements = []
+	Tail.prototype.elements = []
 
-	Trail.prototype.checkDuplicate = function(pos){
+	Tail.prototype.checkDuplicate = function(pos){
 	    var gridded = fromGrid(toGrid(pos));
 	    for (var i=0; i < this.elements.length; i++){
 		var el = this.elements[i];
@@ -262,7 +249,7 @@
 	    return false;
 	};
 
-	Trail.prototype.draw = function(ctx){
+	Tail.prototype.draw = function(ctx){
 	    ctx.fillStyle = "#f93"; this.color;
 	    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 	    ctx.fill();				
