@@ -90,11 +90,14 @@
 	    
 	    this.state = this.STATE.PLAY
 
-
-	    for (var i=0; i < this.level; i++){
+	    for (var i=0; i < 5; i++){
 		var x = Math.random() * width;
 		var y = Math.random() * height;
-		this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
+		this.coquette.entities.create(Adversary,
+					      {
+						  pos: { x:x, y:y },
+						  rank: 3, 
+					      }); // adversary
 	    };
 
 	    
@@ -141,11 +144,11 @@
 
 
 		    if (self.coquette.inputter.state(self.coquette.inputter['S'])){
-			this.angle += .02;
+			this.angle += .04;
 		    }
 
 		    if (self.coquette.inputter.state(self.coquette.inputter['D'])){
-			this.angle -= .02;
+			this.angle -= .04;
 		    }
 		    
 		    //if (self.coquette.inputter.state(self.coquette.inputter['B'])){
@@ -255,15 +258,19 @@
 	
 	var Adversary = function(game, settings){
 	    this.game = game
-	    // shame
+
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
-	    this.size = { x:30, y:30 };
+
+	    this.size = { x: this.rank * 9, y: this.rank * 9 };
 	    
 	    this.shielded = false;
 	    this.shieldTime = new Date();
-	    this.vel = {x: makeVel(), y: makeVel()}
+
+	    if (this.vel == undefined){
+		this.vel = {x: makeVel(), y: makeVel()}
+	    };
 	};
 	
 	
@@ -285,6 +292,18 @@
 	    
 	    kill: function() {
 		this.game.coquette.entities.destroy(this);
+		if (this.rank > 1){
+		    this.game.coquette.entities.create(Adversary, {pos: { x: this.pos.x, y: this.pos.y },
+							      vel: { x: this.vel.y, y: this.vel.x },
+							      rank: this.rank - 1
+							     })
+		    this.game.coquette.entities.create(Adversary, {pos: { x: this.pos.x, y: this.pos.y },
+							      vel: { x: -1 * this.vel.y, y: -1 * this.vel.x },
+							      rank: this.rank - 1
+							     })		    
+		    
+		}
+
 	    },
 	    
 	    update: function(tick) {
@@ -333,14 +352,20 @@
             },
 	    
             collision: function(other) {
+
+
+
 		if (other instanceof Adversary) {
-		    this.kill();
+		    this.kill();				    
+		    other.kill();
+		    /*
 		    if (other.shielded === false){
 			if (this.game.state === this.game.STATE.PLAY){
 			    this.game.score += 1;
 			}
 			other.kill();
 		    }
+		    */
 		}
             },
 	    
