@@ -13,38 +13,6 @@
 	}
 
 
-	var wrapPosition = function(pos){
-	    var xLimit = 500;
-	    var yLimit = 500;
-	    
-	    var x = pos.x;
-	    var y = pos.y;
-
-	    var ny = y;
-	    var nx = x;
-	    
-	    if (y < 0){
-		var ny = y + yLimit;
-	    }
-	    if (y > yLimit){
-		var ny = y - yLimit;
-	    }
-
-	    if (x < 0){
-		var nx = x + xLimit;
-	    }
-	    if (x > xLimit){
-		var nx = x - xLimit;
-	    }
-
-	    return {
-		x: nx,
-		y: ny,
-	    }
-		
-	};
-	    
-
 	
 	var timePassed = function(last, interval) { return last + interval < new Date().getTime(); };
 	
@@ -76,7 +44,10 @@
 	
 	var Game = function(canvasId, width, height) {
 	    
-	    var self = this // save for reference.
+	    var game = this // save for reference.
+
+	    this.width = width;
+	    this.height = height
 	    
 	    this.coquette = new Coquette(this, canvasId, width, height, "#000");
 	    
@@ -102,7 +73,7 @@
 
 	    
 	    this.coquette.entities.create(Person, { 
-		game: self,
+		game: game,
 		pos:{ x:249, y:110 }, 
 		color:"#f00", // red
 
@@ -129,7 +100,7 @@
 		    var speed = 4;
 
 		    // accelerate
-		    if (self.coquette.inputter.state(self.coquette.inputter['UP_ARROW'])){
+		    if (game.coquette.inputter.state(game.coquette.inputter['UP_ARROW'])){
 			this.momentum_vector.x += .02 * Math.sin(this.angle)
 			this.momentum_vector.y += .02 * Math.cos(this.angle)			
 		    }			
@@ -143,26 +114,22 @@
 		    this.pos.y += speed * this.momentum_vector.y;
 
 
-		    if (self.coquette.inputter.state(self.coquette.inputter['S'])){
+		    if (game.coquette.inputter.state(game.coquette.inputter['S'])){
 			this.angle += .04;
 		    }
 
-		    if (self.coquette.inputter.state(self.coquette.inputter['D'])){
+		    if (game.coquette.inputter.state(game.coquette.inputter['D'])){
 			this.angle -= .04;
 		    }
 		    
 		    //if (self.coquette.inputter.state(self.coquette.inputter['B'])){
-		    if (self.coquette.inputter.state(self.coquette.inputter['SPACE'])){			
+		    if (game.coquette.inputter.state(game.coquette.inputter['SPACE'])){			
 			    var vel = {x: Math.sin(this.angle), y: Math.cos(this.angle) };
 			    this.shootBullet(vel);
 		    }
 
 		    if (!this.game.coquette.renderer.onScreen(this)) {
-			console.log("off")
-			//console.log(this.pos);
-			console.log(wrapPosition(this.pos));
-			this.pos = wrapPosition(this.pos);
-			    
+			this.pos = this.game.wrapPosition(this.pos);
 		    }
 		    
 		},
@@ -174,7 +141,7 @@
 		    }
 		    else {
 			if ((other instanceof Adversary) && (other.shielded === false)){
-			    self.state = self.STATE.LOSE;
+			    game.state = game.STATE.LOSE;
 			}
 		    }
 		}
@@ -217,47 +184,58 @@
 	}
 	
 	
-	Game.prototype =  {
-	    draw: function(ctx) {
+	Game.prototype.draw = function(ctx){
+	    if (this.coquette.entities.all(Adversary).length == 0){
+		this.level += 1;
+		this.state = this.STATE.WIN;
 		
+		console.log('you win');
 		
-		if (this.coquette.entities.all(Adversary).length == 0){
-		    this.level += 1;
-		    this.state = this.STATE.WIN;
-
-		    console.log('you win');
-
-		    $("#next").show();
-
-		    
-		}
+		$("#next").show();
 		
-		if (this.state === this.STATE.LOSE){
-		    ctx.fillStyle = "#ccc"
-		    ctx.fillRect(0, 0, 1020, 1020);
-		    ctx.lineWidth=1;
-		    ctx.fillStyle = "#666"
-		    
-		    ctx.font = "44px sans-serif";
-		    ctx.fillText("game over", 400, 100);
-		    
-		    ctx.font = "22px sans-serif";          
-		    ctx.fillText("play again", 400, 140);
-		};
-		
-		ctx.lineWidth=1;
-		ctx.fillStyle = "#fff";
-		ctx.font = "18px sans-serif";
-		ctx.fillText("Score: " + this.score, 20, 20);
 		
 	    }
 	    
+	    if (this.state === this.STATE.LOSE){
+		ctx.fillStyle = "#ccc"
+		ctx.fillRect(0, 0, 1020, 1020);
+		ctx.lineWidth=1;
+		ctx.fillStyle = "#666"
+		
+		ctx.font = "44px sans-serif";
+		ctx.fillText("game over", 400, 100);
+		
+		ctx.font = "22px sans-serif";          
+		ctx.fillText("play again", 400, 140);
+	    };
+	    
+	    ctx.lineWidth=1;
+	    ctx.fillStyle = "#fff";
+	    ctx.font = "18px sans-serif";
+	    ctx.fillText("Score: " + this.score, 20, 20);
+	    
 	};
+
+	function wrapPoint(s, smax){
+	    if (s < 0){ return s + smax; };
+	    if (s > smax){ return s - smax; };
+	    return s;
+	}
+
+	Game.prototype.wrapPosition = function(pos){
+	    return {
+		x: wrapPoint(pos.x, this.width),
+		y: wrapPoint(pos.y, this.height),
+	    }
+		
+	};
+	    
+	
 	
 	// Adversary
 	
 	var Adversary = function(game, settings){
-	    this.game = game
+	    this.game = game;
 
 	    for (var i in settings) {
 		this[i] = settings[i];
@@ -274,51 +252,48 @@
 	};
 	
 	
-	Adversary.prototype = {
-	    
-	    draw: function(ctx) {
+	Adversary.prototype.draw = function(ctx) {
 		//ctx.fillStyle = this.color();
 		ctx.fillStyle = "#fff";
 		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	    },
+	};
 	    
-	    color: function(){
-		if (this.shielded){
-		    return "#0f0";
-		} else {
-		    return "#fff";
-		}
-	    },
 	    
-	    kill: function() {
-		this.game.coquette.entities.destroy(this);
-		if (this.rank > 1){
-		    this.game.coquette.entities.create(Adversary, {pos: { x: this.pos.x, y: this.pos.y },
-							      vel: { x: this.vel.y, y: this.vel.x },
-							      rank: this.rank - 1
-							     })
-		    this.game.coquette.entities.create(Adversary, {pos: { x: this.pos.x, y: this.pos.y },
-							      vel: { x: -1 * this.vel.y, y: -1 * this.vel.x },
-							      rank: this.rank - 1
-							     })		    
-		    
-		}
-
-	    },
+	Adversary.prototype.color = function(){
+	    if (this.shielded){
+		return "#0f0";
+	    } else {
+		return "#fff";
+	    }
+	};
 	    
-	    update: function(tick) {
-		
-		var mx = this.vel.x * tick;
-		var my = this.vel.y * tick;
-		this.pos.x += mx;
-		this.pos.y += my;
-		
-		if (!this.game.coquette.renderer.onScreen(this)) {
-		    this.pos = wrapPosition(this.pos);
-		}
+	Adversary.prototype.kill = function() {
+	    this.game.coquette.entities.destroy(this);
+	    if (this.rank > 1){
+		this.game.coquette.entities.create(Adversary, {pos: { x: this.pos.x, y: this.pos.y },
+							       vel: { x: 2 * this.vel.y, y: 2 * this.vel.x },
+							       rank: this.rank - 1
+							      })
+		this.game.coquette.entities.create(Adversary, {pos: { x: this.pos.x, y: this.pos.y },
+							       vel: { x: -2 * this.vel.y, y: -2 * this.vel.x },
+							       rank: this.rank - 1
+							      })		    
 		
 	    }
-	}
+	};
+	    
+	Adversary.prototype.update = function(tick) {
+	    var mx = this.vel.x * tick;
+	    var my = this.vel.y * tick;
+	    this.pos.x += mx;
+	    this.pos.y += my;
+	    
+	    if (!this.game.coquette.renderer.onScreen(this)) {
+		this.pos = this.game.wrapPosition(this.pos);
+	    }
+	    
+	};
+
 	
 	// Bullet.
 	
@@ -340,6 +315,7 @@
 		this.pos.y += my;
 		
 		if (!this.game.coquette.renderer.onScreen(this)) {
+		    //this.pos = this.game.wrapPosition(this.pos);		    
 		    this.kill();
 		}
             },
