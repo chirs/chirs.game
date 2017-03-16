@@ -104,9 +104,9 @@
 		color:"#f00", // red
 
 		angle: 0,
-		momentum: 0,
+		momentum_vector: {x: 0, y: 0 },
 		
-		SHOOT_DELAY: 300,
+		SHOOT_DELAY: 200,
 		lastShot: 0,
 		
 		shootBullet: function(vector) {
@@ -127,18 +127,17 @@
 
 		    // accelerate
 		    if (self.coquette.inputter.state(self.coquette.inputter['UP_ARROW'])){
-			if (this.momentum < 1){
-			    this.momentum += .02
-			};
+			this.momentum_vector.x += .02 * Math.sin(this.angle)
+			this.momentum_vector.y += .02 * Math.cos(this.angle)			
 		    }			
 
 		    // drag
-		    if (this.momentum > 0){
-			this.momentum -= .002;
-		    };
+		    this.momentum_vector.x *= .997
+		    this.momentum_vector.y *= .997
+
 			
-		    this.pos.x += speed * this.momentum * Math.sin(this.angle);
-		    this.pos.y += speed * this.momentum * Math.cos(this.angle);
+		    this.pos.x += speed * this.momentum_vector.x;
+		    this.pos.y += speed * this.momentum_vector.y;
 
 
 		    if (self.coquette.inputter.state(self.coquette.inputter['S'])){
@@ -149,7 +148,8 @@
 			this.angle -= .02;
 		    }
 		    
-		    if (self.coquette.inputter.state(self.coquette.inputter['B'])){
+		    //if (self.coquette.inputter.state(self.coquette.inputter['B'])){
+		    if (self.coquette.inputter.state(self.coquette.inputter['SPACE'])){			
 			    var vel = {x: Math.sin(this.angle), y: Math.cos(this.angle) };
 			    this.shootBullet(vel);
 		    }
@@ -178,22 +178,7 @@
 	    });
 	};
 	
-	
-	var Box = function(game, settings){
-	    this.size = settings.size || {height:9, width:9 };
-	    this.position = settings.position || {x:0, y:0 };
-	    this.color = setting.scolor || "#ccc";
-	    
-	    this.draw = function(ctx) {
-		ctx.fillStyle = "#fff"
-		ctx.fillRect(this.position.x0, this.position.y, this.size.height, this.size.width);
-		ctx.lineWidth=1;
-		ctx.fillStyle = "#ccc"
-		ctx.font = "44px sans-serif";
-	    }
-	    
-	};
-	
+
 	var Person = function(game, settings) {
 	    for (var i in settings) {
 		this[i] = settings[i];
@@ -211,12 +196,18 @@
 		ctx.fillStyle = this.color;
 		//ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 
-		ctx.beginPath();
+
+
 		ctx.strokeStyle="#FF0000";
 		ctx.moveTo(this.pos.x,this.pos.y);
-		ctx.lineTo(this.pos.x + Math.sin(this.angle) * 100, this.pos.y + Math.cos(this.angle) * 100);
-		
+		ctx.beginPath();
 		ctx.arc(this.pos.x, this.pos.y, 10, 0, 2 * Math.PI);
+		ctx.stroke();		
+
+
+		ctx.beginPath();
+		ctx.moveTo(this.pos.x,this.pos.y);		
+		ctx.lineTo(this.pos.x + Math.sin(this.angle) * 20, this.pos.y + Math.cos(this.angle) * 20);
 
 		ctx.stroke();
 	    }
@@ -234,20 +225,6 @@
 		    console.log('you win');
 
 		    $("#next").show();
-
-		    /*
-		    ctx.fillStyle = "#aaa"
-		    ctx.fillRect(0, 0, 400, 400);
-		    ctx.lineWidth=1;
-		    ctx.fillStyle = "#fff"
-		    
-		    ctx.font = "44px sans-serif";
-		    ctx.fillText("you win", 100, 100);
-		    
-		    ctx.font = "22px sans-serif";          
-		    ctx.fillText("next level", 100, 140);
-		    */
-
 
 		    
 		}
@@ -282,7 +259,7 @@
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
-	    this.size = { x:9, y:9 };
+	    this.size = { x:30, y:30 };
 	    
 	    this.shielded = false;
 	    this.shieldTime = new Date();
@@ -293,7 +270,8 @@
 	Adversary.prototype = {
 	    
 	    draw: function(ctx) {
-		ctx.fillStyle = this.color();
+		//ctx.fillStyle = this.color();
+		ctx.fillStyle = "#fff";
 		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 	    },
 	    
@@ -310,28 +288,14 @@
 	    },
 	    
 	    update: function(tick) {
-		// shield or unshield the adversary	    
-		if ((this.shielded === false) && (Math.random() < .01)){
-		    this.shielded = true;
-		    this.shieldTime = new Date()
-		};
-		
-		if ((this.shielded === true) && (new Date() - this.shieldTime > 1000)){
-		    this.shielded = false;
-		};
 		
 		var mx = this.vel.x * tick;
 		var my = this.vel.y * tick;
 		this.pos.x += mx;
 		this.pos.y += my;
 		
-		this.vel.x += .01 * Math.random() * Math.random() * plusMinus();
-		this.vel.y += .01 * Math.random() * Math.random() * plusMinus();
-		
 		if (!this.game.coquette.renderer.onScreen(this)) {
 		    this.pos = wrapPosition(this.pos);
-		    //this.vel.x = -1 * this.vel.x
-		    //this.vel.y = -1 * this.vel.y	    
 		}
 		
 	    }
@@ -347,7 +311,7 @@
 	
 	Bullet.prototype = {
             size: { x:12, y:12 },
-            speed: .2,
+            speed: .5,
 	    
             update: function(tick) {
 		
@@ -364,6 +328,7 @@
 	    
             draw: function(ctx) {
 		ctx.fillStyle = "#888";
+		ctx.fillStyle = "#99f";		
 		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
             },
 	    
