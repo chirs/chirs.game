@@ -67,7 +67,7 @@
 		this.coquette.entities.create(Adversary,
 					      {
 						  pos: { x:x, y:y },
-						  rank: 3, 
+						  rank: 2, 
 					      }); // adversary
 	    };
 
@@ -193,7 +193,6 @@
 		
 		$("#next").show();
 		
-		
 	    }
 	    
 	    if (this.state === this.STATE.LOSE){
@@ -216,6 +215,8 @@
 	    
 	};
 
+	//  Game.prototype.score = function(ctx){
+
 	function wrapPoint(s, smax){
 	    if (s < 0){ return s + smax; };
 	    if (s > smax){ return s - smax; };
@@ -236,12 +237,13 @@
 	
 	var Adversary = function(game, settings){
 	    this.game = game;
+	    this.scale = 24;
 
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
 
-	    this.size = { x: this.rank * 9, y: this.rank * 9 };
+	    this.size = { x: this.rank * this.scale, y: this.rank * this.scale };
 	    
 	    this.shielded = false;
 	    this.shieldTime = new Date();
@@ -269,6 +271,8 @@
 	    
 	Adversary.prototype.kill = function() {
 	    this.game.coquette.entities.destroy(this);
+	    this.game.score += 1;
+	    
 	    if (this.rank > 1){
 		this.game.coquette.entities.create(Adversary, {pos: { x: this.pos.x, y: this.pos.y },
 							       vel: { x: 2 * this.vel.y, y: 2 * this.vel.x },
@@ -328,8 +332,6 @@
             },
 	    
             collision: function(other) {
-
-
 
 		if (other instanceof Adversary) {
 		    this.kill();				    
