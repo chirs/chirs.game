@@ -24,6 +24,61 @@
 	    return (Math.random() - .5) / 10;
 	}
 
+	var getWallEnd = function(pos, direction, length){
+	    if (direction == 'x'){
+		return { x: pos.x, y: pos.y + length };
+	    } else {
+		return { x: pos.x + length, y: pos.y };
+	    }
+	};
+
+	var oppositeDirection = function(d){
+	    if (d == 'x'){
+		return 'y';
+	    } else {
+		return 'x';
+	    }
+	};
+
+	var createWall = function(width, height, game){
+	    
+	    var x = Math.random() * width;
+	    var y = Math.random() * height;	    
+	    
+	    
+	    var length = Math.random() * height / 4;
+	    if (Math.random() > .5){
+		var direction = 'x';
+	    } else {
+		var direction = 'y';
+	    }
+	    
+	    var pos = { x: x, y: y }
+	    
+	    game.coquette.entities.create(Wall, {
+		game: self,
+		pos: pos,
+		length: length,
+		direction: direction 
+	    })
+	    
+	    var nPos = getWallEnd(pos, direction, length);
+	    
+	    var length = Math.random() * height / 4;
+	    
+	    var x = nPos.x
+	    var y = nPos.y
+	    
+	    game.coquette.entities.create(Wall, {
+		game: self,
+		pos: { x: x, y: y },
+		length: length,
+		direction: oppositeDirection(direction)
+	    })		
+	};	
+	
+	
+
 
 	var Game = function(canvasId, width, height, name) {
 	    
@@ -71,7 +126,25 @@
 		});
 
 		this.startLevel(name)
-	    };	    
+	    };
+
+	    if (name == 'nibbles'){
+		for (var i=0; i < 20; i++){
+		    createWall(width, height, this);
+		};
+		/*
+		this.coquette.entities.create(Snake, { 
+		    game: self,
+		    pos:{ x:249, y:110 }, 
+		    color:"#0ff", // light blue
+		    
+		    SHOOT_DELAY: 300,
+		    lastShot: 0,
+		    dir: undefined,
+		});
+		*/
+	    };
+		    
 	};
 
 	Game.prototype.startLevel = function(){
@@ -438,8 +511,44 @@
         };
 	
 
+	// Wall
+	var Wall = function(game, settings){
+	    this.game = game
+
+	    if (settings.direction == 'x'){
+		settings.size = {
+		    x: 10,
+		    y: settings.length
+		}
+	    } else {
+		settings.size = {
+		    x: settings.length,
+		    y: 10,
+		}
+	    }
+	    
+	    for (var i in settings) {
+		this[i] = settings[i];
+	    }
+
+	};
+
+	var Pellet = function(game, settings) {
+	    for (var i in settings) {
+		this[i] = settings[i];
+	    }
+	    this.size = { x:10, y:10 };
+	    this.game = game;
+	};
+
 	
 
+
+	Wall.prototype.draw = function(ctx) {
+		ctx.fillStyle = "#dbd"
+		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+	};
+	
 	var startGame = function(game){
 	    if (loaded === false){
 		loaded = true;
@@ -449,6 +558,64 @@
 		new Game("gameCanvas", t.width(), t.height(), game);
 	    }
 	};
+
+	var Pellet = function(game, settings) {
+	    for (var i in settings) {
+		this[i] = settings[i];
+	    }
+	    this.size = { x:10, y:10 };
+	    this.game = game;
+	};	
+
+	Pellet.prototype.draw = function(ctx){
+		ctx.fillStyle = "#fff"; this.color;
+		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+		ctx.fill();		
+	};
+
+
+	Pellet.prototype.kill = function() {
+	    this.game.coquette.entities.destroy(this);
+	};
+
+	    
+        Pellet.prototype.collision = function(other) {
+	    if (other instanceof Wall) {
+		this.kill();
+	    }		
+	};
+
+	var Tail = function(game, settings){
+	    settings.pos = fromGrid(toGrid(settings.pos));
+
+	    for (var i in settings) {
+		this[i] = settings[i];
+	    }
+	    this.size = { x:10, y:10 };
+	};
+
+	Tail.prototype.elements = []
+
+	Tail.prototype.checkDuplicate = function(pos){
+	    var gridded = fromGrid(toGrid(pos));
+	    for (var i=0; i < this.elements.length; i++){
+		var el = this.elements[i];
+		if (el.pos.x == gridded.x){
+		    if (el.pos.y == gridded.y){
+			return true;
+		    };
+		};
+	    };
+	    return false;
+	};
+
+	Tail.prototype.draw = function(ctx){
+	    ctx.fillStyle = "#f93"; this.color;
+	    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+	    ctx.fill();				
+	};	
+
+	
     
 	$("#gamelist li").click(function(){
 	    var game = $(this).html()
