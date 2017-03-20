@@ -17,7 +17,7 @@ div#game {
     height: 80%;
     width: 100%;
     color: #eee;
-    background-color: ccc;
+    background-color: #bbb;        
 }
 
 div#game #title {
@@ -26,9 +26,8 @@ div#game #title {
     left: 30%;
     width: 40%;
     font-size: 6em;
-    height: 30%;
     top: 35%;
-    margin-top: -5%;
+    background-color: #aaa;    
 }
 
 div#game #gamelist {
@@ -36,14 +35,18 @@ div#game #gamelist {
     list-style-type: none;
     position: absolute;
     left: 30%;
+    top: 60%;    
     width: 10%;
     font-size: 1em;
-    top: 60%;
-    margin-top: -5%;
-    color: #666;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    color: #333;
 }
 
-
+div#game #gamelist li:hover {
+    background-color: #999;
+}
 
 #header {
     text-align: center;
@@ -52,8 +55,8 @@ div#game #gamelist {
     width: 40%;
     height: 6%;
     top: 0%;
-    background-color: #ddd;
-    color: #777;
+    background-color: #bbb;
+    color: #eee;
     font-size: .7em
     }
 
@@ -63,23 +66,18 @@ div#game #gamelist {
     
 
 
-
-
-
 .x {
     display: none;
 }
 
-
-div#next {
-    display: none;
+#lose {
     position: absolute;
-    top: 10%;
-    left: 0%;
-    height: 40%;
-    margin: 20% 0;
-    width: 20%;
-    color: #fff;
-    background-coor: #000;
+    width: 100%;
     text-align: center;
+    top: 30%;
+    font-size: 2em;
+    background-color: #a00;
+    display: none;
+    opacity: .75;
+   
 }

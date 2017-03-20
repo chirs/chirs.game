@@ -225,16 +225,7 @@
 	
 
 	Game.prototype.drawLose = function(ctx){
-	    ctx.fillStyle = "#ccc"
-	    ctx.fillRect(0, 0, 1020, 1020);
-	    ctx.lineWidth = 1;
-	    ctx.fillStyle = "#666"
-	    
-	    ctx.font = "44px sans-serif";
-	    ctx.fillText("game over", 400, 100);
-	    
-	    ctx.font = "22px sans-serif";          
-	    ctx.fillText("play again", 400, 140);	    
+	    $("#lose").show();
 	};
 
 	var startGame = function(game){
