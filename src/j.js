@@ -37,7 +37,7 @@
 	    this.height = height;
 	    
 	    this.score = 0;
-	    this.level = 1;
+	    this.level = 0;
 
 	    this.playing = false;
 	    
@@ -49,7 +49,7 @@
 	    this.state = this.STATE.PLAY
 
 	    if (name == 'touch'){
-		this.coquette.entities.create(Player, { 
+		this.coquette.entities.create(Toucher, { 
 		    game: game,
 		    pos:{ x:249, y:110 }, 
 		    color:"#f00", // red
@@ -100,9 +100,7 @@
 
 	Game.prototype.update = function(ctx){
 	    if (this.coquette.entities.all(Adversary).length == 0){
-		if (this.coquette.entities.all(Asteroid).length == 0){
 		    this.playing = false;
-		}	    		
 	    }
 
 	    if (this.playing == false){
@@ -114,7 +112,6 @@
 		
 	};
 
-
 	Game.prototype.wrapPosition = function(pos){
 	    return {
 		x: wrapPoint(pos.x, this.width),
@@ -125,6 +122,7 @@
 	
 	Game.prototype.draw = function(ctx){
 
+	    this.drawLevel(ctx);
 	    this.drawScore(ctx);	    
 		
 	    if (this.state === this.STATE.LOSE){
@@ -132,11 +130,17 @@
 	    };
 	};
 
+	Game.prototype.drawLevel = function(ctx){
+	    ctx.lineWidth=1;
+	    ctx.fillStyle = "#fff";
+	    ctx.font = "18px sans-serif";
+	    ctx.fillText("Level: " + this.level, 20, 20);
+	};
 	Game.prototype.drawScore = function(ctx){
 	    ctx.lineWidth=1;
 	    ctx.fillStyle = "#fff";
 	    ctx.font = "18px sans-serif";
-	    ctx.fillText("Score: " + this.score, 20, 20);
+	    ctx.fillText("Score: " + this.score, 20, 40);
 	};	
 	
 
@@ -158,6 +162,11 @@
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
+	}
+		
+
+
+	var Toucher = function(game, settings){
 	    this.size = { x:9, y:9 };
 	    this.draw = function(ctx) {
 		ctx.fillStyle = settings.color;
@@ -165,7 +174,9 @@
 	    };
 	};
 
-	Player.prototype.update = function() {
+	Toucher.prototype = Object.create(Player.prototype);
+
+	Toucher.prototype.update = function() {
 	    var speed = 2;
 	    var directions = {
 		'UP_ARROW': [0, -speed],
@@ -186,8 +197,8 @@
 		this.pos = this.game.wrapPosition(this.pos);
 	    }
 	};
-		
-	Player.prototype.collision = function(other) {
+
+	Toucher.prototype.collision = function(other) {
 
 	    if ((other instanceof Adversary) && (other.shielded === true)){
 		this.game.state = this.game.STATE.LOSE;			
@@ -200,15 +211,16 @@
 		this.size.y += 1;
 	    }
 	    
-	};
+	};	
+	
 
 	var Spaceship = function(game, settings) {
-	    for (var i in settings) {
-		this[i] = settings[i];
-	    }
-	    this.size = { x:25, y:25 };
+	    Player.call(this, game, settings);
 
+	    this.size = { x:25, y:25 };
 	};
+
+	Spaceship.prototype = Object.create(Player.prototype);	
 	
 	Spaceship.prototype.draw = function(ctx){
 		ctx.fillStyle = this.color;
@@ -305,16 +317,8 @@
 	
 	
 	Adversary.prototype.draw = function(ctx){
-		ctx.fillStyle = this.color();
+		ctx.fillStyle = "#fff";	    
 		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	};
-	    
-	Adversary.prototype.color = function(){
-		if (this.shielded){
-		    return "#0f0";
-		} else {
-		    return "#fff";
-		}
 	};
 	    
 	Adversary.prototype.kill = function(){
@@ -339,12 +343,15 @@
 
 	
 	var Asteroid = function(game, settings){
-	    this.game = game;
+	    Adversary.call(this, game, settings);
+
+	    
+	    //this.game = game;
 	    this.scale = 24;
 
-	    for (var i in settings) {
-		this[i] = settings[i];
-	    }
+	    //for (var i in settings) {
+	    // this[i] = settings[i];
+	    //}
 
 	    this.size = { x: this.rank * this.scale, y: this.rank * this.scale };
 	    
@@ -355,22 +362,9 @@
 		this.vel = {x: makeVel(), y: makeVel()}
 	    };
 	};
+
+	Asteroid.prototype = Object.create(Adversary.prototype);
 	
-	
-	Asteroid.prototype.draw = function(ctx) {
-		//ctx.fillStyle = this.color();
-		ctx.fillStyle = "#fff";
-		ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-	};
-	    
-	    
-	Asteroid.prototype.color = function(){
-	    if (this.shielded){
-		return "#0f0";
-	    } else {
-		return "#fff";
-	    }
-	};
 	    
 	Asteroid.prototype.kill = function() {
 	    this.game.coquette.entities.destroy(this);
@@ -433,7 +427,7 @@
 	};
 	    
         Bullet.prototype.collision = function(other) {
-		if (other instanceof Asteroid) {
+		if (other instanceof Adversary) {
 		    this.kill();				    
 		    other.kill();
 		};
