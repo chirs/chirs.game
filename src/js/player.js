@@ -1,9 +1,15 @@
 
+// This doesn't do anything!
+
 var Player = function(game, settings) {
     for (var i in settings) {
 	this[i] = settings[i];
     }
 }
+
+Player.prototype.kill = function() {
+    this.game.coquette.entities.destroy(this);
+};
 
 
 
@@ -137,5 +143,117 @@ Spaceship.prototype.collision = function(other) {
     if ((other instanceof Asteroid) && (other.shielded === false)){
 	this.game.state = this.game.STATE.LOSE;
     }
-};		
+};
+
+
+
+
+var Tail = function(game, settings){
+    settings.pos = fromGrid(toGrid(settings.pos));
+    
+    for (var i in settings) {
+	this[i] = settings[i];
+    }
+    this.size = { x:10, y:10 };
+};
+
+Tail.prototype.elements = []
+
+Tail.prototype.checkDuplicate = function(pos){
+    var gridded = fromGrid(toGrid(pos));
+    for (var i=0; i < this.elements.length; i++){
+	var el = this.elements[i];
+	if (el.pos.x == gridded.x){
+	    if (el.pos.y == gridded.y){
+		return true;
+	    };
+	};
+    };
+    return false;
+};
+
+Tail.prototype.draw = function(ctx){
+    ctx.fillStyle = "#f93"; this.color;
+    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+    ctx.fill();				
+};	
+
+var Snake = function(game, settings) {
+    Player.call(this, game, settings);    
+    this.size = { x:10, y:10 };
+};
+
+
+Snake.prototype.draw = function(ctx){
+    ctx.fillStyle = "#ff0"
+    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+    ctx.fill();		
+};
+
+Snake.prototype.update = function() {
+    
+    var speed = 2;
+    
+    directions = {
+	'UP_ARROW': [0, -speed],
+	'DOWN_ARROW': [0, speed],
+	'LEFT_ARROW': [-speed, 0],
+	'RIGHT_ARROW': [speed, 0],
+    }
+    
+    this.OPPOSITES ={
+	'UP_ARROW': 'DOWN_ARROW',
+	'DOWN_ARROW': 'UP_ARROW',
+	'LEFT_ARROW': 'RIGHT_ARROW',
+	'RIGHT_ARROW': 'LEFT_ARROW',
+    }			
+    
+    for (key in directions){
+	if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
+	    this.direction = key;
+	    this.dir = directions[key]			    
+	}
+	if (this.dir){
+	    this.pos.x += this.dir[0];
+	    this.pos.y += this.dir[1];
+	}
+    };
+    
+    // Check that the trail doesn't already exist.
+    if (trailExists(this.pos) == false){
+	var tt = this.game.coquette.entities.create(Tail, { pos:{ x:this.pos.x, y:this.pos.y }}); // adversary
+	
+	var tailPieces = this.game.coquette.entities.all(Tail)
+	if (tailPieces.length > 20){
+	    var tt = tailPieces.pop();
+	    this.game.coquette.entities.destroy(tt);
+	};
+    }
+};
+
+
+var trailExists = function(pos){
+    var np = toGrid(pos)
+    for (var i=0; i < trailExists.els.length; i++){
+	var el = trailExists.els[i];
+	if (el.x == np.x){
+	    if (el.y == np.y){
+		return true;
+	    };
+	};
+    };
+    return false
+}
+
+trailExists.els = []
+
+Snake.prototype.collision = function(other) {
+    //if (other instanceof Wall){
+    //this.game.playing = false;
+    //this.kill();
+    //}
+    //if (other instanceof Tail){
+    //this.kill();
+    //}	    
+};
 

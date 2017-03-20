@@ -110,34 +110,5 @@ Pellet.prototype.collision = function(other) {
     }		
 };
 
-var Tail = function(game, settings){
-    settings.pos = fromGrid(toGrid(settings.pos));
-    
-    for (var i in settings) {
-	this[i] = settings[i];
-    }
-    this.size = { x:10, y:10 };
-};
-
-Tail.prototype.elements = []
-
-Tail.prototype.checkDuplicate = function(pos){
-    var gridded = fromGrid(toGrid(pos));
-    for (var i=0; i < this.elements.length; i++){
-	var el = this.elements[i];
-	if (el.pos.x == gridded.x){
-	    if (el.pos.y == gridded.y){
-		return true;
-	    };
-	};
-    };
-    return false;
-};
-
-Tail.prototype.draw = function(ctx){
-    ctx.fillStyle = "#f93"; this.color;
-    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-    ctx.fill();				
-};	
 
 

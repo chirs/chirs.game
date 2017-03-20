@@ -4,9 +4,6 @@
 
 	var loaded = false; // Game has been loaded?
 
-	
-
-
 	var Game = function(canvasId, width, height, name) {
 	    
 	    var game = this; // necessary?
@@ -59,9 +56,9 @@
 		for (var i=0; i < 20; i++){
 		    createWall(width, height, this);
 		};
-		/*
+
 		this.coquette.entities.create(Snake, { 
-		    game: self,
+		    game: game,
 		    pos:{ x:249, y:110 }, 
 		    color:"#0ff", // light blue
 		    
@@ -69,7 +66,7 @@
 		    lastShot: 0,
 		    dir: undefined,
 		});
-		*/
+
 	    };
 		    
 	};

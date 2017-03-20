@@ -8,6 +8,26 @@ var plusMinus = function(){
     return 1;
 };
 
+
+// For doing grid-based operations.
+// Should be an object?
+var toGrid = function(pos){
+    var scale = 10; // 10x10 squares
+    return {
+	x: Math.round(pos.x / scale),
+	y: Math.round(pos.y / scale),
+    }
+};
+
+var fromGrid = function(pos){
+    var scale = 10;
+    return {
+	x: 10 * pos.x,
+	y: 10 * pos.y
+    }
+}
+
+
 var wrapPoint = function(s, smax){
     if (s < 0){ return s + smax; };
     if (s > smax){ return s - smax; };
