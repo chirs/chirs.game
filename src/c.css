@@ -27,8 +27,20 @@ div#game #title {
     width: 40%;
     font-size: 6em;
     height: 30%;
-    top: 50%;
+    top: 35%;
     margin-top: -5%;
+}
+
+div#game #gamelist {
+    background-color: #ddd;
+    list-style-type: none;
+    position: absolute;
+    left: 30%;
+    width: 10%;
+    font-size: 1em;
+    top: 60%;
+    margin-top: -5%;
+    color: #666;
 }
 
 
