@@ -45,7 +45,7 @@
 	    
 	    this.state = this.STATE.PLAY
 
-	    this.coquette.entities.create(Person, { 
+	    this.coquette.entities.create(Spaceship, { 
 		game: game,
 		pos:{ x:250, y:100 }, 
 		color:"#f00", // red
@@ -117,12 +117,7 @@
 	    ctx.fillText("play again", 400, 140);
 	};
 
-	Game.prototype.drawScore = function(ctx){
-	    ctx.lineWidth=1;
-	    ctx.fillStyle = "#fff";
-	    ctx.font = "18px sans-serif";
-	    ctx.fillText("Score: " + this.score, 20, 20);
-	};
+
 	    	    
 
 	Game.prototype.wrapPosition = function(pos){
@@ -130,10 +125,9 @@
 		x: wrapPoint(pos.x, this.width),
 		y: wrapPoint(pos.y, this.height),
 	    }
-		
 	};
 
-	var Person = function(game, settings) {
+	var Spaceship = function(game, settings) {
 	    for (var i in settings) {
 		this[i] = settings[i];
 	    }
@@ -141,7 +135,7 @@
 
 	};
 	
-	Person.prototype.draw = function(ctx){
+	Spaceship.prototype.draw = function(ctx){
 		ctx.fillStyle = this.color;
 
 		ctx.strokeStyle="#FF0000";
@@ -157,7 +151,7 @@
 		ctx.stroke();
 	};
 
-	Person.prototype.shootBullet = function(vector) {
+	Spaceship.prototype.shootBullet = function(vector) {
 	    if (timePassed(this.lastShot, this.SHOOT_DELAY) && (this.game.state !== this.game.STATE.LOSE) ) {
 		this.game.coquette.entities.create(Bullet, {
 		    pos: { x : this.pos.x, y: this.pos.y },
@@ -169,7 +163,7 @@
 	    }
 	};
 	
-	Person.prototype.update = function() {
+	Spaceship.prototype.update = function() {
 	    var speed = 4;
 	    
 	    // accelerate
@@ -194,8 +188,7 @@
 
 	};
 
-	Person.prototype.controls = function(){
-	    // rotate
+	Spaceship.prototype.controls = function(){
 	    if (this.game.coquette.inputter.state(this.game.coquette.inputter['S'])){
 		this.angle += .04;
 	    }
@@ -210,14 +203,9 @@
 	    }
 	};
 	
-	Person.prototype.collision = function(other) {
-	    if (other.shielded){
-		// Should block collision.
-	    }
-	    else {
-		if ((other instanceof Asteroid) && (other.shielded === false)){
-		    this.game.state = this.game.STATE.LOSE;
-		}
+	Spaceship.prototype.collision = function(other) {
+	    if ((other instanceof Asteroid) && (other.shielded === false)){
+		this.game.state = this.game.STATE.LOSE;
 	    }
 	};		
 	    
