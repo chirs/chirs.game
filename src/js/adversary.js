@@ -93,3 +93,34 @@ Asteroid.prototype.update = function(tick) {
 	this.pos = this.game.wrapPosition(this.pos);
     }
 };
+
+
+
+
+// Pellets are sort of like immobile, defenseless adversaries.
+
+var Pellet = function(game, settings) {
+    for (var i in settings) {
+	this[i] = settings[i];
+    }
+    this.size = { x:10, y:10 };
+    this.game = game;
+};	
+
+Pellet.prototype.draw = function(ctx){
+    ctx.fillStyle = "#fff"; this.color;
+    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+    ctx.fill();		
+};
+
+
+Pellet.prototype.kill = function() {
+    this.game.coquette.entities.destroy(this);
+};
+
+
+Pellet.prototype.collision = function(other) {
+    if (other instanceof Wall) {
+	this.kill();
+    }		
+};

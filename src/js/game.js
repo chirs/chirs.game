@@ -66,7 +66,26 @@
 		    lastShot: 0,
 		    dir: undefined,
 		});
+	    };
 
+
+
+	    if (name == 'pong'){
+
+		var x = width / 2;
+		var y = height / 2;
+		this.coquette.entities.create(Ball, { pos:{ x:x, y:y }});
+		
+		this.createPongWalls();
+
+		this.coquette.entities.create(Paddle, { 
+		    game: game,
+		    pos:{ x:200, y:100 }, 
+		    color:"#0ff", // light blue
+		    
+		    SHOOT_DELAY: 300,
+		    lastShot: 0,
+		});
 	    };
 		    
 	};
@@ -115,6 +134,70 @@
 		y: wrapPoint(pos.y, this.height),
 	    }
 	};
+
+
+	// This should be somewhere else.
+	Game.prototype.createPongWalls = function(){
+
+	    
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 25, y: 25 },
+		length: 100,
+		direction: 'x'
+	    })
+	    
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 25, y: 225 },
+		length: 100,
+		direction: 'x'
+	    })	    
+	    
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 625, y: 25 },
+		length: 100,
+		direction: 'x'
+	    })
+	    
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 625, y: 150 },
+		length: 200,
+		direction: 'x'
+	    })
+
+
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 825, y: 25 },
+		length: 300,
+		direction: 'x'
+	    })
+	    
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 825, y: 350 },
+		length: 100,
+		direction: 'x'
+	    })	    	  	    
+	    
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 25, y: 25 },
+		length: 1200,
+		direction: 'y'
+	    })
+	    
+	    this.coquette.entities.create(Wall, {
+		game: self,
+		pos: {x: 25, y: 325 },
+		length: 1200,
+		direction: 'y'
+	    })	    
+	};
+	    
 	
 	
 	Game.prototype.draw = function(ctx){

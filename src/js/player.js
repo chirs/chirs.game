@@ -257,3 +257,46 @@ Snake.prototype.collision = function(other) {
     //}	    
 };
 
+
+
+
+
+	
+var Paddle = function(game, settings) {
+    Player.call(this, game, settings);
+
+    this.size = { x:9, y:54 };
+    this.draw = function(ctx) {
+	ctx.fillStyle = settings.color;
+	ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+    };
+};
+
+
+Paddle.prototype.update = function() {
+    var speed = 2;
+    var directions = {
+	'UP_ARROW': [0, -speed],
+	'DOWN_ARROW': [0, speed],
+    } 
+    
+    
+    for (key in directions){
+	if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
+	    var dir = directions[key]
+	    this.pos.x += dir[0];
+	    this.pos.y += dir[1];
+	}
+    }
+    
+};
+
+Paddle.prototype.collision = function(other) {
+    if (other instanceof Ball){
+	this.game.score += 1;
+	other.vel.x = -1 * other.vel.x;
+    }
+};
+
+
+
