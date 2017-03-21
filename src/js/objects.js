@@ -28,13 +28,15 @@ Bullet.prototype.update = function(tick) {
 };
 
 Bullet.prototype.draw = function(ctx) {
-    ctx.fillStyle = "#888";
-    ctx.fillStyle = "#99f";		
+    ctx.fillStyle = "#4f4";
     ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 };
 
 Bullet.prototype.collision = function(other) {
-    if (other instanceof Adversary) {
+    if (other instanceof Asteroid) {
+	this.kill();
+	other.explode();
+    } else if (other instanceof Adversary) {
 	this.kill();				    
 	other.kill();
     };
@@ -45,9 +47,6 @@ Bullet.prototype.kill = function() {
 };
 
 
-
-
-	
 var Ball = function(game, settings){
     for (var i in settings) {
 	this[i] = settings[i];

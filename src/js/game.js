@@ -33,7 +33,7 @@
 		    pos:{ x:249, y:110 }, 
 		    color:"#f00", // red
 		});
-		this.startLevel(name)
+		this.startLevel()
 	    };
 
 	    if (name == 'asteroids'){
@@ -49,7 +49,7 @@
 		    lastShot: 0,
 		});
 
-		this.startLevel(name)
+		this.startLevel()
 	    };
 
 	    if (name == 'nibbles'){
@@ -90,6 +90,8 @@
 		    
 	};
 
+
+
 	Game.prototype.startLevel = function(){
 	    if (this.playing == false){
 		this.level += 1;		
@@ -114,18 +116,35 @@
 	    };
 	};
 
+	Game.prototype.restart = function(){
+	    this.level = 0;
+	    this.score = 0;
+	    this.playing = false;
+	    this.state = this.STATE.PLAY;
+
+	    this.coquette.entities.all(Adversary).forEach(function (entity) {
+		entity.kill(true); // remove this true call when you split out kill on Asteroids.
+	    });
+
+	    this.startLevel();
+
+	    $("#lose").hide();
+	    
+	    
+	};	
+
 	Game.prototype.update = function(ctx){
 	    if (this.coquette.entities.all(Adversary).length == 0){
-		    this.playing = false;
+		this.playing = false;
 	    }
 
 	    if (this.playing == false){
 		if (this.coquette.inputter.state(this.coquette.inputter['R'])){
 		    this.startLevel();
-		    this.playing = true;		    
+		    this.playing = true;
 		};
 	    };
-		
+
 	};
 
 	Game.prototype.wrapPosition = function(pos){
@@ -139,28 +158,28 @@
 	// This should be somewhere else.
 	Game.prototype.createPongWalls = function(){
 
-	    
+
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 25, y: 25 },
 		length: 100,
 		direction: 'x'
 	    })
-	    
+
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 25, y: 225 },
 		length: 100,
 		direction: 'x'
-	    })	    
-	    
+	    })
+
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 625, y: 25 },
 		length: 100,
 		direction: 'x'
 	    })
-	    
+
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 625, y: 150 },
@@ -175,40 +194,49 @@
 		length: 300,
 		direction: 'x'
 	    })
-	    
+
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 825, y: 350 },
 		length: 100,
 		direction: 'x'
-	    })	    	  	    
-	    
+	    })
+
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 25, y: 25 },
 		length: 1200,
 		direction: 'y'
 	    })
-	    
+
 	    this.coquette.entities.create(Wall, {
 		game: self,
 		pos: {x: 25, y: 325 },
 		length: 1200,
 		direction: 'y'
-	    })	    
+	    })
 	};
-	    
-	
-	
+
+
+
 	Game.prototype.draw = function(ctx){
 
 	    this.drawLevel(ctx);
-	    this.drawScore(ctx);	    
-		
+	    this.drawScore(ctx);
+
 	    if (this.state === this.STATE.LOSE){
 		this.drawLose(ctx);
 	    };
 	};
+	
+
+	Game.prototype.wrapPosition = function(pos){
+	    return {
+		x: wrapPoint(pos.x, this.width),
+		y: wrapPoint(pos.y, this.height),
+	    }
+	};
+	
 
 	Game.prototype.drawLevel = function(ctx){
 	    ctx.lineWidth=1;
@@ -216,6 +244,7 @@
 	    ctx.font = "18px sans-serif";
 	    ctx.fillText("Level: " + this.level, 20, 20);
 	};
+
 	Game.prototype.drawScore = function(ctx){
 	    ctx.lineWidth=1;
 	    ctx.fillStyle = "#fff";
@@ -234,13 +263,17 @@
 		var t = $("#game");
 		t.html('');
 		t.append($('<canvas/>', {'id': 'gameCanvas','Width': t.width(), 'Height': t.height()}));
-		new Game("gameCanvas", t.width(), t.height(), game);
+		return new Game("gameCanvas", t.width(), t.height(), game);
 	    }
 	};
-    
+
 	$("#gamelist li").click(function(){
-	    var game = $(this).html()
-	    startGame(game);
+	    var name = $(this).html()
+	    var game = startGame(name);
+
+	    $("#playagain").click(function(){
+		game.restart();
+	    });
 	});
     });
     

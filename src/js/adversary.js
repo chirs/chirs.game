@@ -46,7 +46,6 @@ Adversary.prototype.update = function(tick) {
 var Asteroid = function(game, settings){
     Adversary.call(this, game, settings);
     
-    
     //this.game = game;
     this.scale = 24;
     
@@ -67,22 +66,6 @@ var Asteroid = function(game, settings){
 Asteroid.prototype = Object.create(Adversary.prototype);
 
 
-Asteroid.prototype.kill = function() {
-    this.game.coquette.entities.destroy(this);
-    this.game.score += 1;
-    
-    if (this.rank > 1){
-	this.game.coquette.entities.create(Asteroid, {pos: { x: this.pos.x, y: this.pos.y },
-						      vel: { x: 2 * this.vel.y, y: 2 * this.vel.x },
-						      rank: this.rank - 1
-						     })
-	this.game.coquette.entities.create(Asteroid, {pos: { x: this.pos.x, y: this.pos.y },
-						      vel: { x: -2 * this.vel.y, y: -2 * this.vel.x },
-						      rank: this.rank - 1
-						     })		    
-    }
-};
-
 Asteroid.prototype.update = function(tick) {
     var mx = this.vel.x * tick;
     var my = this.vel.y * tick;
@@ -94,7 +77,21 @@ Asteroid.prototype.update = function(tick) {
     }
 };
 
-
+Asteroid.prototype.explode = function() {
+    this.game.coquette.entities.destroy(this);
+    this.game.score += 1;    
+	// Should probably have a different method that handles this when an asteroid gets shot.
+    if (this.rank > 1){
+	this.game.coquette.entities.create(Asteroid, {pos: { x: this.pos.x, y: this.pos.y },
+						      vel: { x: 2 * this.vel.y, y: 2 * this.vel.x },
+						      rank: this.rank - 1
+						     })
+	this.game.coquette.entities.create(Asteroid, {pos: { x: this.pos.x, y: this.pos.y },
+						      vel: { x: -2 * this.vel.y, y: -2 * this.vel.x },
+						      rank: this.rank - 1
+						     })
+    };
+};
 
 
 // Pellets are sort of like immobile, defenseless adversaries.
