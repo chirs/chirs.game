@@ -74,7 +74,11 @@
 
 		var x = width / 2;
 		var y = height / 2;
-		this.coquette.entities.create(Ball, { pos: { x:x, y:y }});
+		this.coquette.entities.create(Ball, {
+		    pos: { x:x, y:y },
+		    vel: {x: .4, y: .2} //20 * makeVel(), y: 5 * makeVel()} // This is just a vector?
+		}
+					    
 		
 		this.createPongWalls();
 
@@ -87,7 +91,7 @@
 
 		this.coquette.entities.create(Paddle, { 
 		    game: game,
-		    pos:{ x:1100, y:100 }, 
+		    pos:{ x: this.width - 200, y:100 }, 
 		    color:"#0ff", // light blue
 		    controls: 2,
 		});
@@ -163,17 +167,17 @@
 	Game.prototype.createPongWalls = function(){
 	    // This should be somewhere else.
 	    // Make the computations a little better.
-	    var xLength = this.height - (25 * 2);
+	    var xLength = this.height - (50 * 2);
 	    var wallLength = (xLength - 100) / 2;
 
 	    var walls = [
-		[25, 25, 1200, 'y'],
-		[25, this.height - 25, 1200, 'y'],
+		[25, 50, this.width-100, 'y'],
+		[25, this.height - 50, this.width-100, 'y'],
 
-		[25, 25, wallLength, 'x'],
-		[25, wallLength+125, wallLength, 'x'],
-		[1225, 25, wallLength, 'x'],
-		[1225, wallLength+125, wallLength, 'x'],		
+		[25, 50, wallLength, 'x'],
+		[25, wallLength+150, wallLength, 'x'],
+		[this.width-75, 50, wallLength, 'x'],
+		[this.width-75, wallLength+150, wallLength, 'x'],		
 		]
 
 	    for (var i=0; i < walls.length; i++){
@@ -226,18 +230,33 @@
 	    ctx.lineWidth=1;
 	    ctx.fillStyle = "#fff";
 	    ctx.font = "12px sans-serif";
+	    var xPos = this.width - 150;
 	    if (this.name == "asteroids"){
-		var xPos = this.width - 150
 		var controls = [
 		    "↑: forward",
 		    "d: rotate ↻",
 		    "s: rotate ↺",
 		    "space: shoot"
 		];
+	    };
+	    if (this.name == "touch"){
+		var controls = [
+		    "use the direction buttons",
+		    "eat the white squares"
+		];
+	    };
+	    if (this.name == "pong"){
+		var controls = [
+		    "s: p1 up",		    
+		    "d: p1 down",
+		    "↑: p2 up",
+		    "↓: p2 down",
+		];
 
-		for (var i=0; i < controls.length; i++){		
-		    ctx.fillText(controls[i], xPos, 20 * (i+1));
-		};
+	    };	    
+
+	    for (var i=0; i < controls.length; i++){		
+		ctx.fillText(controls[i], xPos, 20 * (i+1));
 	    };
 	};
 
