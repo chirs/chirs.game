@@ -11,7 +11,6 @@ var Adversary = function(game, settings){
     this.size = { x:9, y:9 };
     
     this.shielded = false;
-    // this.shieldTime = new Date();
     
     this.vel = {x: makeVel(), y: makeVel()}
 };
@@ -46,12 +45,7 @@ Adversary.prototype.update = function(tick) {
 var Asteroid = function(game, settings){
     Adversary.call(this, game, settings);
     
-    //this.game = game;
-    this.scale = 24;
-    
-    //for (var i in settings) {
-    // this[i] = settings[i];
-    //}
+    this.scale = 16;
     
     this.size = { x: this.rank * this.scale, y: this.rank * this.scale };
     
@@ -80,7 +74,7 @@ Asteroid.prototype.update = function(tick) {
 Asteroid.prototype.explode = function() {
     this.game.coquette.entities.destroy(this);
     this.game.score += 1;    
-	// Should probably have a different method that handles this when an asteroid gets shot.
+    // Should probably have a different method that handles this when an asteroid gets shot.
     if (this.rank > 1){
 	this.game.coquette.entities.create(Asteroid, {pos: { x: this.pos.x, y: this.pos.y },
 						      vel: { x: 2 * this.vel.y, y: 2 * this.vel.x },

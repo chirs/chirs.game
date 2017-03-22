@@ -77,7 +77,7 @@
 		this.coquette.entities.create(Ball, {
 		    pos: { x:x, y:y },
 		    vel: {x: .4, y: .2} //20 * makeVel(), y: 5 * makeVel()} // This is just a vector?
-		}
+		});
 					    
 		
 		this.createPongWalls();
@@ -112,7 +112,7 @@
 		    for (var i=0; i < 5; i++){
 			var x = Math.random() * this.width;
 			var y = Math.random() * this.height;
-			var settings = { pos: { x:x, y:y }, rank: 2 };
+			var settings = { pos: { x:x, y:y }, rank: 3 };
 			this.coquette.entities.create(Asteroid, settings);
 		    };
 		};
