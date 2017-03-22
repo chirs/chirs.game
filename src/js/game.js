@@ -117,6 +117,8 @@
 	};
 
 	Game.prototype.restart = function(){
+
+	    
 	    this.level = 0;
 	    this.score = 0;
 	    this.playing = false;
@@ -126,24 +128,29 @@
 		entity.kill(true); // remove this true call when you split out kill on Asteroids.
 	    });
 
-	    this.startLevel();
-
+	    console.log("x");
 	    $("#lose").hide();
+	    console.log("x");	    
+
+	    this.startLevel();
 	    
 	    
 	};	
 
 	Game.prototype.update = function(ctx){
-	    if (this.coquette.entities.all(Adversary).length == 0){
+	    if (this.coquette.entities.all(Adversary).length == 0 && this.coquette.entities.all(Ball).length == 0){
 		this.playing = false;
+		this.startLevel();
 	    }
 
+	    /*
 	    if (this.playing == false){
 		if (this.coquette.inputter.state(this.coquette.inputter['R'])){
 		    this.startLevel();
 		    this.playing = true;
 		};
 	    };
+	    */
 
 	};
 
@@ -218,26 +225,26 @@
 	};
 
 
-
-	Game.prototype.draw = function(ctx){
-
-	    this.drawLevel(ctx);
-	    this.drawScore(ctx);
-
-	    if (this.state === this.STATE.LOSE){
-		this.drawLose(ctx);
-	    };
-	};
-	
-
 	Game.prototype.wrapPosition = function(pos){
 	    return {
 		x: wrapPoint(pos.x, this.width),
 		y: wrapPoint(pos.y, this.height),
 	    }
 	};
+
 	
 
+	Game.prototype.draw = function(ctx){
+
+	    this.drawLevel(ctx);
+	    this.drawScore(ctx);
+	    this.drawControls(ctx);
+
+	    if (this.state === this.STATE.LOSE){
+		this.drawLose(ctx);
+	    };
+	};
+	
 	Game.prototype.drawLevel = function(ctx){
 	    ctx.lineWidth=1;
 	    ctx.fillStyle = "#fff";
@@ -250,7 +257,27 @@
 	    ctx.fillStyle = "#fff";
 	    ctx.font = "18px sans-serif";
 	    ctx.fillText("Score: " + this.score, 20, 40);
-	};	
+	};
+
+	Game.prototype.drawControls = function(ctx){
+	    ctx.lineWidth=1;
+	    ctx.fillStyle = "#fff";
+	    ctx.font = "12px sans-serif";
+	    if (this.name == "asteroids"){
+		var xPos = this.width - 150
+		var controls = [
+		    "↑: forward",
+		    "d: rotate ↻",
+		    "s: rotate ↺",
+		    "space: shoot"
+		];
+
+		for (var i=0; i < controls.length; i++){		
+		    ctx.fillText(controls[i], xPos, 20 * (i+1));
+		};
+	    };
+	};
+
 	
 
 	Game.prototype.drawLose = function(ctx){
