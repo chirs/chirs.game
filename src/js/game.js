@@ -74,18 +74,25 @@
 
 		var x = width / 2;
 		var y = height / 2;
-		this.coquette.entities.create(Ball, { pos:{ x:x, y:y }});
+		this.coquette.entities.create(Ball, { pos: { x:x, y:y }});
 		
 		this.createPongWalls();
 
 		this.coquette.entities.create(Paddle, { 
 		    game: game,
 		    pos:{ x:200, y:100 }, 
+		    color:"#ff0", // light blue
+		    controls: 1,
+		});			
+
+		this.coquette.entities.create(Paddle, { 
+		    game: game,
+		    pos:{ x:1100, y:100 }, 
 		    color:"#0ff", // light blue
-		    
-		    SHOOT_DELAY: 300,
-		    lastShot: 0,
+		    controls: 2,
 		});
+
+	
 	    };
 		    
 	};
@@ -143,15 +150,6 @@
 		this.startLevel();
 	    }
 
-	    /*
-	    if (this.playing == false){
-		if (this.coquette.inputter.state(this.coquette.inputter['R'])){
-		    this.startLevel();
-		    this.playing = true;
-		};
-	    };
-	    */
-
 	};
 
 	Game.prototype.wrapPosition = function(pos){
@@ -162,66 +160,31 @@
 	};
 
 
-	// This should be somewhere else.
 	Game.prototype.createPongWalls = function(){
+	    // This should be somewhere else.
+	    // Make the computations a little better.
+	    var xLength = this.height - (25 * 2);
+	    var wallLength = (xLength - 100) / 2;
 
+	    var walls = [
+		[25, 25, 1200, 'y'],
+		[25, this.height - 25, 1200, 'y'],
 
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 25 },
-		length: 100,
-		direction: 'x'
-	    })
+		[25, 25, wallLength, 'x'],
+		[25, wallLength+125, wallLength, 'x'],
+		[1225, 25, wallLength, 'x'],
+		[1225, wallLength+125, wallLength, 'x'],		
+		]
 
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 225 },
-		length: 100,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 625, y: 25 },
-		length: 100,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 625, y: 150 },
-		length: 200,
-		direction: 'x'
-	    })
-
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 825, y: 25 },
-		length: 300,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 825, y: 350 },
-		length: 100,
-		direction: 'x'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 25 },
-		length: 1200,
-		direction: 'y'
-	    })
-
-	    this.coquette.entities.create(Wall, {
-		game: self,
-		pos: {x: 25, y: 325 },
-		length: 1200,
-		direction: 'y'
-	    })
+	    for (var i=0; i < walls.length; i++){
+		var props = walls[i]; // destructure?
+		
+		this.coquette.entities.create(Wall, {
+		    pos: { x: props[0], y: props[1] },
+		    length: props[2],
+		    direction: props[3]
+		})
+	    };
 	};
 
 

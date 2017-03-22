@@ -54,7 +54,7 @@ var Ball = function(game, settings){
 
     this.game = game;
     this.size = { x:9, y:9 };
-    this.vel = {x: 20 * makeVel(), y: 5 * makeVel()} // This is just a vector?
+    this.vel = {x: 1, y: .2} //20 * makeVel(), y: 5 * makeVel()} // This is just a vector?
 };
 	
 Ball.prototype.draw = function(ctx){

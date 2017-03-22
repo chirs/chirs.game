@@ -275,19 +275,24 @@ var Paddle = function(game, settings) {
 
 Paddle.prototype.update = function() {
     var speed = 2;
+
     var directions = {
-	'UP_ARROW': [0, -speed],
-	'DOWN_ARROW': [0, speed],
+	'UP_ARROW': [2, [0, -speed]],
+	'DOWN_ARROW': [2, [0, speed]],
+	'S': [1, [0, -speed]],
+	'D': [1, [0, speed]],	
     } 
-    
     
     for (key in directions){
 	if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
-	    var dir = directions[key]
-	    this.pos.x += dir[0];
-	    this.pos.y += dir[1];
-	}
-    }
+	    var data = directions[key];
+	    if (this.controls == data[0]){
+		var dir = data[1];
+		this.pos.x += dir[0];
+		this.pos.y += dir[1];
+	    };
+	};
+    };
     
 };
 
@@ -295,6 +300,10 @@ Paddle.prototype.collision = function(other) {
     if (other instanceof Ball){
 	this.game.score += 1;
 	other.vel.x = -1 * other.vel.x;
+    }
+
+    if (other instanceof Wall){
+	// do something.
     }
 };
 
