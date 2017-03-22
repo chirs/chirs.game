@@ -118,7 +118,7 @@
 		};
 
 		if (this.name == 'touch'){
-		    for (var i=0; i < 2 ** this.level; i++){
+		    for (var i=0; i < Math.pow(2, this.level); i++){
 			var x = Math.random() * this.width;
 			var y = Math.random() * this.height;
 			this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
