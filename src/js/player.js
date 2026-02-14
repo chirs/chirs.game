@@ -125,15 +125,15 @@ Spaceship.prototype.update = function() {
 };
 
 Spaceship.prototype.controls = function(){
-    if (this.game.coquette.inputter.state(this.game.coquette.inputter['S'])){
-	this.angle += .04;
+    if (this.game.coquette.inputter.state(this.game.coquette.inputter['LEFT_ARROW'])){
+	this.angle += .06;
     }
-    
-    if (this.game.coquette.inputter.state(this.game.coquette.inputter['D'])){
-	this.angle -= .04;
+
+    if (this.game.coquette.inputter.state(this.game.coquette.inputter['RIGHT_ARROW'])){
+	this.angle -= .06;
     }
-    
-    if (this.game.coquette.inputter.state(this.game.coquette.inputter['SPACE'])){			
+
+    if (this.game.coquette.inputter.state(this.game.coquette.inputter['SPACE'])){
 	var vector = {x: Math.sin(this.angle), y: Math.cos(this.angle) };
 	this.shootBullet(vector);
     }

@@ -233,9 +233,9 @@
 	    var xPos = this.width - 150;
 	    if (this.name == "asteroids"){
 		var controls = [
-		    "↑: forward",
-		    "d: rotate ↻",
-		    "s: rotate ↺",
+		    "↑: thrust",
+		    "←: rotate ↺",
+		    "→: rotate ↻",
 		    "space: shoot"
 		];
 	    };
