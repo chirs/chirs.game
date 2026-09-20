@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Browser-based retro arcade game collection ("Where names become games!") at chirs.game. Three playable games: Touch, Asteroids, and Pong. Pure static site — no build tools, no package manager, no transpilation.
+Browser-based retro arcade game collection ("Where names become games!") at chirs.game. Three playable games: Touch, Space, and Pong. Pure static site — no build tools, no package manager, no transpilation.
 
 ## Running Locally
 
@@ -24,8 +24,8 @@ Then open http://localhost:8000. There are no tests or linting tools.
 ### Key files in `src/js/`
 
 - **game.js** — Game controller class. Initializes Coquette, manages game state (PLAY/LOSE), level progression, and per-game setup (entity spawning, wall creation for Pong). Wrapped in an IIFE.
-- **player.js** — Player entity classes: `Toucher` (Touch), `Spaceship` (Asteroids), `Paddle` (Pong). Each handles its own input and collision response.
-- **adversary.js** — Enemy entities: `Adversary` (Touch), `Asteroid` (Asteroids, breaks into smaller ranks on destruction).
+- **player.js** — Player entity classes: `Toucher` (Touch), `Spaceship` (Space), `Paddle` (Pong). Each handles its own input and collision response.
+- **adversary.js** — Enemy entities: `Adversary` (Touch), `Asteroid` (Space, breaks into smaller ranks on destruction).
 - **objects.js** — Supporting entities: `Bullet`, `Ball`, `Wall`.
 - **func.js** — Utility functions: screen wrapping (`wrapPoint`), time throttling (`timePassed`), random velocity (`makeVel`), grid helpers.
 

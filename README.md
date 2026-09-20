@@ -11,7 +11,7 @@ Play at [chirs.game](https://chirs.game).
 **Touch** — Navigate your player through a field of enemies. Avoid contact at all costs.
 - Arrow keys to move
 
-**Asteroids** — Pilot a spaceship through an asteroid field. Shoot to survive as asteroids break into smaller, faster fragments.
+**Space** — Pilot a spaceship through an asteroid field. Shoot to survive as asteroids break into smaller, faster fragments.
 - Arrow keys to move, space to shoot
 
 **Pong** — Classic two-player paddle game.
