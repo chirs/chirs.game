@@ -13,54 +13,78 @@ Player.prototype.kill = function() {
 
 
 
-var Toucher = function(game, settings){
+var Toucher = function(game, settings) {
     Player.call(this, game, settings);
-    
-    this.size = { x:9, y:9 };
-    this.draw = function(ctx) {
-	ctx.fillStyle = settings.color;
-	ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-    };
+    this.size = { x: 16, y: 16 };
+    this.flash = 0;
+    this.dead = false;
 };
 
 Toucher.prototype = Object.create(Player.prototype);
 
-Toucher.prototype.update = function() {
-    var speed = 2;
-    var directions = {
-	'UP_ARROW': [0, -speed],
-	'DOWN_ARROW': [0, speed],
-	'LEFT_ARROW': [-speed, 0],
-	'RIGHT_ARROW': [speed, 0],
-	
-    }
-    
-    for (key in directions){
-	if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
-	    var dir = directions[key]
-	    this.pos.x += dir[0];
-	    this.pos.y += dir[1];
-	}
-    }
-    if (!this.game.coquette.renderer.onScreen(this)) {
-	this.pos = this.game.wrapPosition(this.pos);
+Toucher.prototype.draw = function(ctx) {
+    if (this.dead) return;
+    ctx.strokeStyle = this.flash > 0 ? "#ff5c35" : "#f2eadf";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(this.pos.x + 1, this.pos.y + 1, this.size.x - 2, this.size.y - 2);
+    ctx.fillStyle = "#ff5c35";
+    ctx.fillRect(this.pos.x + this.size.x / 2 - 2, this.pos.y + this.size.y / 2 - 2, 4, 4);
+};
+
+Toucher.prototype.resize = function(size) {
+    this.pos.x -= (size - this.size.x) / 2;
+    this.pos.y -= (size - this.size.y) / 2;
+    this.size = { x: size, y: size };
+    this.clamp();
+};
+
+Toucher.prototype.clamp = function() {
+    var bounds = this.game.touchBounds;
+    this.pos.x = Math.max(bounds.left, Math.min(bounds.right - this.size.x, this.pos.x));
+    this.pos.y = Math.max(bounds.top, Math.min(bounds.bottom - this.size.y, this.pos.y));
+};
+
+Toucher.prototype.update = function(tick) {
+    var input = this.game.coquette.inputter;
+    var x = (input.state(input.RIGHT_ARROW) ? 1 : 0) - (input.state(input.LEFT_ARROW) ? 1 : 0);
+    var y = (input.state(input.DOWN_ARROW) ? 1 : 0) - (input.state(input.UP_ARROW) ? 1 : 0);
+    var speed = .24 * Math.min(tick, 32) / (x && y ? Math.sqrt(2) : 1);
+    this.pos.x += x * speed;
+    this.pos.y += y * speed;
+    this.flash = Math.max(0, this.flash - tick);
+    this.clamp();
+};
+
+Toucher.prototype.burst = function(pos, count, color) {
+    for (var i = 0; i < count; i++) {
+        var angle = Math.random() * Math.PI * 2;
+        var speed = .04 + Math.random() * .1;
+        this.game.coquette.entities.create(Particle, {
+            pos: pos,
+            vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
+            life: 180 + Math.random() * 160,
+            color: color
+        });
     }
 };
 
 Toucher.prototype.collision = function(other) {
-    
-    if ((other instanceof Adversary) && (other.shielded === true)){
-	this.game.state = this.game.STATE.LOSE;			
+    if (!(other instanceof TouchSquare) || other.dead || this.game.state !== this.game.STATE.PLAY) return;
+    if (other.shielded) {
+        this.dead = true;
+        this.game.state = this.game.STATE.LOSE;
+        this.game.sound.play("death");
+        this.burst({ x: this.pos.x + this.size.x / 2, y: this.pos.y + this.size.y / 2 }, 14, "#ff5c35");
+        return;
     }
-    
-    if ((other instanceof Adversary) && (other.shielded === false)){
-	other.kill();
-	this.game.score += 1;
-	this.size.x += 1;
-	this.size.y += 1;
-    }
-    
-};	
+    other.kill();
+    this.game.score += 10;
+    this.game.touchFood -= 1;
+    this.resize(this.size.x + 3);
+    this.game.sound.play("pickup", this.size.x);
+    this.flash = 120;
+    this.burst({ x: other.pos.x + 4.5, y: other.pos.y + 4.5 }, 6, "#f2eadf");
+};
 
 
 var Spaceship = function(game, settings) {

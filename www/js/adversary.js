@@ -17,7 +17,7 @@ var Adversary = function(game, settings){
 
 
 Adversary.prototype.draw = function(ctx){
-    ctx.fillStyle = "#fff";	    
+    ctx.fillStyle = this.shielded ? "#ff5c35" : "#f2eadf";
     ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 };
 
@@ -41,6 +41,53 @@ Adversary.prototype.update = function(tick) {
     
 };
 
+
+var TouchSquare = function(game, settings) {
+    this.game = game;
+    this.pos = settings.pos;
+    this.shielded = settings.shielded;
+    this.size = this.shielded ? { x: 16, y: 16 } : { x: 9, y: 9 };
+    this.dead = false;
+    var angle = Math.random() * Math.PI * 2;
+    this.vel = { x: Math.cos(angle) * settings.speed, y: Math.sin(angle) * settings.speed };
+};
+
+TouchSquare.prototype = Object.create(Adversary.prototype);
+
+TouchSquare.prototype.draw = function(ctx) {
+    if (this.dead) return;
+    Adversary.prototype.draw.call(this, ctx);
+    if (this.shielded) {
+        ctx.strokeStyle = "#151311";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(this.pos.x + 4, this.pos.y + 4);
+        ctx.lineTo(this.pos.x + 12, this.pos.y + 12);
+        ctx.moveTo(this.pos.x + 12, this.pos.y + 4);
+        ctx.lineTo(this.pos.x + 4, this.pos.y + 12);
+        ctx.stroke();
+    }
+};
+
+TouchSquare.prototype.update = function(tick) {
+    if (this.dead) return;
+    var bounds = this.game.touchBounds;
+    this.pos.x += this.vel.x * Math.min(tick, 32);
+    this.pos.y += this.vel.y * Math.min(tick, 32);
+    if (this.pos.x < bounds.left || this.pos.x + this.size.x > bounds.right) {
+        this.vel.x *= -1;
+        this.pos.x = Math.max(bounds.left, Math.min(bounds.right - this.size.x, this.pos.x));
+    }
+    if (this.pos.y < bounds.top || this.pos.y + this.size.y > bounds.bottom) {
+        this.vel.y *= -1;
+        this.pos.y = Math.max(bounds.top, Math.min(bounds.bottom - this.size.y, this.pos.y));
+    }
+};
+
+TouchSquare.prototype.kill = function() {
+    this.dead = true;
+    Adversary.prototype.kill.call(this);
+};
 
 var Asteroid = function(game, settings){
     Adversary.call(this, game, settings);
