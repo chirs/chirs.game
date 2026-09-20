@@ -288,49 +288,24 @@ Snake.prototype.collision = function(other) {
 
 
 	
-var Paddle = function(game, settings) {
-    Player.call(this, game, settings);
-
-    this.size = { x:9, y:54 };
-    this.draw = function(ctx) {
-	ctx.fillStyle = settings.color;
-	ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
-    };
+var PingPaddle = function(game) {
+    this.game = game;
+    this.size = { x: Math.min(110, game.width / 4), y: 10 };
+    this.pos = { x: (game.width - this.size.x) / 2, y: game.height - 40 };
 };
 
-
-Paddle.prototype.update = function() {
-    var speed = 2;
-
-    var directions = {
-	'UP_ARROW': [2, [0, -speed]],
-	'DOWN_ARROW': [2, [0, speed]],
-	'S': [1, [0, -speed]],
-	'D': [1, [0, speed]],	
-    } 
-    
-    for (key in directions){
-	if (this.game.coquette.inputter.state(this.game.coquette.inputter[key])){
-	    var data = directions[key];
-	    if (this.controls == data[0]){
-		var dir = data[1];
-		this.pos.x += dir[0];
-		this.pos.y += dir[1];
-	    };
-	};
-    };
-    
+PingPaddle.prototype.moveTo = function(x) {
+    this.pos.x = Math.max(0, Math.min(this.game.width - this.size.x, x - this.size.x / 2));
 };
 
-Paddle.prototype.collision = function(other) {
-    if (other instanceof Ball){
-	this.game.score += 1;
-	other.vel.x = -1 * other.vel.x;
-    }
-
-    if (other instanceof Wall){
-	// do something.
-    }
+PingPaddle.prototype.update = function(tick) {
+    var input = this.game.coquette.inputter;
+    var direction = (input.state(input.RIGHT_ARROW) ? 1 : 0) -
+                    (input.state(input.LEFT_ARROW) ? 1 : 0);
+    this.moveTo(this.pos.x + this.size.x / 2 + direction * Math.min(tick, 50) * .6);
 };
 
-
+PingPaddle.prototype.draw = function(ctx) {
+    ctx.fillStyle = "#f2eadf";
+    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+};
