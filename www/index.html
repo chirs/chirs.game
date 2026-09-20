@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <title>chirs.game</title>
@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="c.css" type="text/css" media="screen">
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
   <script type="text/javascript" src="coquette-min.js"></script>
 
   <script type="text/javascript" src="js/func.js"></script>
@@ -26,10 +25,12 @@
   <div id="header">
       <p>chirs.game presents</p>
   </div>
+  <button id="menu-button" type="button" hidden>← menu <span>esc</span></button>
   <div id="game">
+    <div id="selector">
     <div id="title">generic<br><span>video games</span></div>
     <ul id="gamelist">
-      <li id="touch" data-game="touch" tabindex="0">
+      <li id="touch" data-game="touch" tabindex="0" role="button">
         <span class="number">01</span>
         <span class="game-name">touch</span>
         <svg class="primitive primitive-touch" viewBox="0 0 100 36" aria-hidden="true">
@@ -38,7 +39,7 @@
           <rect class="accent" x="76" y="22" width="10" height="10" />
         </svg>
       </li>
-      <li id="asteroids" data-game="asteroids" tabindex="0">
+      <li id="asteroids" data-game="asteroids" tabindex="0" role="button">
         <span class="number">02</span>
         <span class="game-name">space</span>
         <svg class="primitive primitive-space" viewBox="0 0 100 44" aria-hidden="true">
@@ -57,11 +58,14 @@
       <!--<li id="nibbles">nibbles</li>-->
       <!--<li id="pacman">pacman</li>-->
     </ul>
+    </div>
+    <canvas id="gameCanvas" tabindex="0" aria-label="Game playfield" hidden></canvas>
   </div>
 
-    <div id="lose">
-      <p>game over</p>
-      <p id="playagain">press enter or r to play again</p>
+    <div id="lose" role="dialog" aria-modal="true" aria-labelledby="game-over-title" hidden>
+      <p id="game-over-title">game over</p>
+      <button id="playagain" type="button">play again <span>enter / r</span></button>
+      <button id="lose-menu" type="button">back to menu <span>esc</span></button>
     </div>
 
 

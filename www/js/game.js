@@ -1,342 +1,353 @@
 (function() {
+    var Game = function(canvas, width, height) {
+        this.canvas = canvas;
+        this.width = width;
+        this.height = height;
+        this.STATE = { MENU: 0, PLAY: 1, LOSE: 2 };
+        this.state = this.STATE.MENU;
+        this.sound = arcadeSound;
+        this.coquette = new Coquette(this, canvas.id, width, height, "#151311");
 
-    $(document).ready(function() {
+        var game = this;
+        var collider = this.coquette.collider;
+        var intersects = collider.isIntersecting;
+        collider.isIntersecting = function(a, b) {
+            return game.state === game.STATE.PLAY && intersects.call(this, a, b);
+        };
+        this.coquette.entities.update = function(tick) {
+            this.all().slice().forEach(function(entity) {
+                if (entity.update && (game.state === game.STATE.PLAY ||
+                    (game.state === game.STATE.LOSE && entity instanceof Particle))) {
+                    entity.update(tick);
+                }
+            });
+        };
+    };
 
-	var loaded = false; // Game has been loaded?
-	var currentGame;
+    Game.prototype.clear = function() {
+        this.sound.stop();
+        this.coquette.runner.runs.length = 0;
+        this.coquette.entities._entities.length = 0;
+        this.coquette.collider.collideRecords = [];
+        this.coquette.inputter._state = {};
+    };
 
-	var Game = function(canvasId, width, height, name) {
-	    
-	    var game = this; // necessary?
+    Game.prototype.start = function(name, width, height) {
+        this.clear();
+        this.name = name;
+        this.width = this.canvas.width = this.coquette.renderer.width = width;
+        this.height = this.canvas.height = this.coquette.renderer.height = height;
+        this.score = 0;
+        this.level = 0;
+        this.playing = false;
+        this.state = this.STATE.PLAY;
+        var center = { x: width / 2, y: height / 2 };
 
-	    this.name = name;
+        if (name === "touch") {
+            this.touchBounds = { left: 12, top: 88, right: width - 12, bottom: height - 12 };
+            this.toucher = new Toucher(this, { game: this, pos: center });
+            this.coquette.entities._entities.push(this.toucher);
+        } else if (name === "asteroids") {
+            this.coquette.entities.create(Spaceship, {
+                game: this, pos: center, angle: 0, vector: { x: 0, y: 0 },
+                SHOOT_DELAY: 200, lastShot: 0
+            });
+        } else if (name === "ping") {
+            this.lives = 3;
+            this.paddle = new PingPaddle(this);
+            this.ball = new PingBall(this);
+            this.coquette.entities._entities.push(this.paddle, this.ball);
+        }
+        this.startLevel();
+    };
 
-	    this.coquette = new Coquette(this, canvasId, width, height, "#151311");
+    Game.prototype.restart = function() {
+        this.start(this.name, this.width, this.height);
+    };
 
-	    this.width = width;
-	    this.height = height;
-	    
-	    this.score = 0;
-	    this.level = 0;
+    Game.prototype.menu = function() {
+        this.state = this.STATE.MENU;
+        this.clear();
+    };
 
-	    this.playing = false;
-	    
-	    this.STATE = {
-		PLAY: 0,
-		LOSE: 1
-	    }
-	    
-	    this.state = this.STATE.PLAY
+    Game.prototype.startLevel = function() {
+        if (this.playing || this.state !== this.STATE.PLAY) return;
+        this.level += 1;
+        if (this.level > 1) this.sound.play("wave");
+        this.playing = true;
+        if (this.name === "touch") {
+            this.startTouchWave();
+            return;
+        }
+        if (this.name === "ping") {
+            var columns = 8;
+            var brickWidth = (this.width - 48) / columns;
+            for (var row = 0; row < 4; row++) {
+                for (var column = 0; column < columns; column++) {
+                    this.coquette.entities.create(Brick, {
+                        pos: { x: 24 + column * brickWidth, y: 90 + row * 23 },
+                        size: { x: brickWidth - 6, y: 15 },
+                        color: row === (this.level - 1) % 4 ? "#ff5c35" : "#f2eadf"
+                    });
+                }
+            }
+            this.ball.reset();
+            return;
+        }
+        var count = 5;
+        if (this.name !== "asteroids") return;
 
-	    if (name == 'touch'){
-		this.coquette.entities.create(Toucher, { 
-		    game: game,
-		    pos:{ x:249, y:110 }, 
-		    color:"#f00", // red
-		});
-		this.startLevel()
-	    };
+        for (var i = 0; i < count; i++) {
+            var x = Math.random() * this.width;
+            var y = Math.random() * this.height;
+            if (this.name === "asteroids") {
+                var safeX = Math.min(140, this.width / 4);
+                var safeY = Math.min(140, this.height / 4);
+                while (Math.abs(x - this.width / 2) < safeX &&
+                       Math.abs(y - this.height / 2) < safeY) {
+                    x = Math.random() * this.width;
+                    y = Math.random() * this.height;
+                }
+            }
+            this.coquette.entities.create(Asteroid, {
+                pos: { x: x, y: y }, rank: 3
+            });
+        }
+    };
 
-	    if (name == 'asteroids'){
-		this.coquette.entities.create(Spaceship, { 
-		    game: game,
-		    pos:{ x: width / 2, y: height / 2 },
-		    color:"#f00", // red
-		    
-		    angle: 0,
-		    vector: {x: 0, y: 0 },
-		    
-		    SHOOT_DELAY: 200,
-		    lastShot: 0,
-		});
+    Game.prototype.startTouchWave = function() {
+        var entities = this.coquette.entities;
+        entities.all(TouchSquare).forEach(function(square) { square.kill(); });
+        this.toucher.resize(16);
+        this.waveNotice = 1000;
 
-		this.startLevel()
-	    };
+        var bounds = this.touchBounds;
+        var player = this.toucher;
+        var slots = [];
+        for (var y = bounds.top + 8; y <= bounds.bottom - 24; y += 48) {
+            for (var x = bounds.left + 8; x <= bounds.right - 24; x += 48) {
+                if (x + 16 < player.pos.x - 72 || x > player.pos.x + player.size.x + 72 ||
+                    y + 16 < player.pos.y - 72 || y > player.pos.y + player.size.y + 72) {
+                    slots.push({ x: x, y: y });
+                }
+            }
+        }
+        this.touchFood = Math.min(5 + this.level, 12, Math.floor(slots.length * 2 / 3));
+        var hazards = Math.min(2 + this.level, 12, slots.length - this.touchFood);
+        for (var i = 0; i < this.touchFood + hazards; i++) {
+            var slot = slots.splice(Math.floor(Math.random() * slots.length), 1)[0];
+            entities.create(TouchSquare, {
+                pos: slot,
+                shielded: i >= this.touchFood,
+                speed: i >= this.touchFood ? Math.min(.09 + this.level * .008, .18) : .045
+            });
+        }
+    };
 
-	    if (name == 'nibbles'){
-		for (var i=0; i < 20; i++){
-		    createWall(width, height, this);
-		};
+    Game.prototype.update = function(tick) {
+        if (this.state !== this.STATE.PLAY) return;
+        if (this.name === "asteroids" && this.coquette.inputter.state(this.coquette.inputter.UP_ARROW)) {
+            this.sound.play("thrust");
+        }
+        if (this.name === "touch") {
+            this.waveNotice = Math.max(0, this.waveNotice - Math.min(tick || 0, 32));
+            if (this.touchFood === 0) {
+                this.playing = false;
+                this.startLevel();
+            }
+        }
+        if (this.name === "ping" && this.coquette.entities.all(Brick).length === 0) {
+            this.playing = false;
+            this.startLevel();
+        }
+        if (this.name === "asteroids" &&
+            this.coquette.entities.all(Adversary).length === 0) {
+            this.playing = false;
+            this.startLevel();
+        }
+    };
 
-		this.coquette.entities.create(Snake, { 
-		    game: game,
-		    pos:{ x:249, y:110 }, 
-		    color:"#0ff", // light blue
-		    
-		    SHOOT_DELAY: 300,
-		    lastShot: 0,
-		    dir: undefined,
-		});
-	    };
+    Game.prototype.wrapPosition = function(pos) {
+        return { x: wrapPoint(pos.x, this.width), y: wrapPoint(pos.y, this.height) };
+    };
 
+    Game.prototype.draw = function(ctx) {
+        if (this.state === this.STATE.MENU) return;
+        ctx.fillStyle = "#817a72";
+        ctx.font = "12px 'IBM Plex Mono', monospace";
+        ctx.fillText((this.name === "touch" ? "WAVE " : "LEVEL ") + this.level, 20, 28);
+        ctx.fillStyle = "#f2eadf";
+        ctx.fillText("SCORE " + this.score, 20, 48);
 
+        var controls = {
+            touch: ["ARROWS  MOVE", "COLLECT WHITE", "AVOID ORANGE"],
+            asteroids: ["↑  THRUST", "← →  TURN", "SPACE  FIRE"],
+            ping: ["← → / MOUSE  MOVE", "SPACE / CLICK  SERVE"]
+        };
+        ctx.fillStyle = "#817a72";
+        ctx.font = "11px 'IBM Plex Mono', monospace";
+        var x = this.width - 150;
+        controls[this.name].forEach(function(line, index) {
+            ctx.fillText(line, x, 20 * (index + 1));
+        });
+        if (this.name === "touch") {
+            ctx.fillStyle = "#ff5c35";
+            ctx.fillText("FOOD LEFT " + this.touchFood, 20, 68);
+            if (this.waveNotice > 0 && this.state === this.STATE.PLAY) {
+                ctx.textAlign = "center";
+                ctx.fillText("WAVE " + this.level + " / START SMALL. GET BIG.", this.width / 2, this.height - 24);
+                ctx.textAlign = "left";
+            }
+        }
+        if (this.name === "ping") {
+            ctx.fillStyle = "#ff5c35";
+            ctx.fillText("LIVES " + this.lives, 20, 68);
+            if (!this.ball.launched && this.state === this.STATE.PLAY) {
+                ctx.textAlign = "center";
+                ctx.fillText("SPACE OR CLICK TO SERVE", this.width / 2, this.height - 85);
+                ctx.textAlign = "left";
+            }
+        }
+        if (this.onLose && this.state === this.STATE.LOSE) this.onLose();
+    };
 
-	    if (name == 'pong'){
+    window.ArcadeGame = Game;
 
-		var x = width / 2;
-		var y = height / 2;
-		this.coquette.entities.create(Ball, {
-		    pos: { x:x, y:y },
-		    vel: {x: .4, y: .2} //20 * makeVel(), y: 5 * makeVel()} // This is just a vector?
-		});
-					    
-		
-		this.createPongWalls();
+    document.addEventListener("DOMContentLoaded", function() {
+        var game;
+        var container = document.getElementById("game");
+        var selector = document.getElementById("selector");
+        var canvas = document.getElementById("gameCanvas");
+        var menuButton = document.getElementById("menu-button");
+        var soundButton = document.getElementById("sound-button");
+        var lose = document.getElementById("lose");
+        var restartButton = document.getElementById("playagain");
+        var items = Array.prototype.slice.call(document.querySelectorAll("#gamelist li"));
+        var selected = 0;
 
-		this.coquette.entities.create(Paddle, { 
-		    game: game,
-		    pos:{ x:200, y:100 }, 
-		    color:"#ff0", // light blue
-		    controls: 1,
-		});			
+        try { arcadeSound.setMuted(localStorage.getItem("arcade-muted") === "true"); } catch (error) {}
+        function showSoundState() {
+            soundButton.textContent = arcadeSound.muted ? "sound off" : "sound on";
+            soundButton.setAttribute("aria-pressed", String(arcadeSound.muted));
+        }
+        showSoundState();
+        soundButton.addEventListener("click", function() {
+            arcadeSound.setMuted(!arcadeSound.muted);
+            arcadeSound.unlock();
+            showSoundState();
+            try { localStorage.setItem("arcade-muted", String(arcadeSound.muted)); } catch (error) {}
+            if (game && game.state === game.STATE.PLAY) canvas.focus();
+        });
+        window.addEventListener("pointerdown", function() { arcadeSound.unlock(); });
 
-		this.coquette.entities.create(Paddle, { 
-		    game: game,
-		    pos:{ x: this.width - 200, y:100 }, 
-		    color:"#0ff", // light blue
-		    controls: 2,
-		});
+        function select(index, focus) {
+            selected = (index + items.length) % items.length;
+            items.forEach(function(item, i) { item.classList.toggle("selected", i === selected); });
+            if (focus) items[selected].focus();
+        }
 
-	
-	    };
-		    
-	};
+        function restart() {
+            lose.hidden = true;
+            game.restart();
+            canvas.focus();
+        }
 
+        function menu() {
+            if (!game) return;
+            game.menu();
+            lose.hidden = true;
+            canvas.hidden = true;
+            menuButton.hidden = true;
+            selector.hidden = false;
+            select(selected, true);
+        }
 
+        function start(name) {
+            arcadeSound.unlock();
+            selector.hidden = true;
+            canvas.hidden = false;
+            menuButton.hidden = false;
+            if (!game) {
+                game = new Game(canvas, container.clientWidth, container.clientHeight);
+                game.onLose = function() {
+                    if (lose.hidden) {
+                        lose.hidden = false;
+                        restartButton.focus();
+                    }
+                };
+            }
+            game.start(name, container.clientWidth, container.clientHeight);
+            canvas.focus();
+        }
 
-	Game.prototype.startLevel = function(){
-	    if (this.playing == false){
-		this.level += 1;		
-		this.playing = true;
-
-		if (this.name == 'asteroids'){
-		    for (var i=0; i < 5; i++){
-			var x;
-			var y;
-			do {
-			    x = Math.random() * this.width;
-			    y = Math.random() * this.height;
-			} while (Math.abs(x - this.width / 2) < 140 &&
-				 Math.abs(y - this.height / 2) < 140);
-			var settings = { pos: { x:x, y:y }, rank: 3 };
-			this.coquette.entities.create(Asteroid, settings);
-		    };
-		};
-
-		if (this.name == 'touch'){
-		    for (var i=0; i < Math.pow(2, this.level); i++){
-			var x = Math.random() * this.width;
-			var y = Math.random() * this.height;
-			this.coquette.entities.create(Adversary, { pos:{ x:x, y:y }}); // adversary
-		    };
-		};
-	    };
-	};
-
-	Game.prototype.restart = function(){
-
-	    
-	    this.level = 0;
-	    this.score = 0;
-	    this.playing = false;
-	    this.state = this.STATE.PLAY;
-
-	    this.coquette.entities.all(Adversary).forEach(function (entity) {
-		entity.kill(true); // remove this true call when you split out kill on Asteroids.
-	    });
-	    this.coquette.entities.all(Bullet).forEach(function (entity) {
-		entity.kill();
-	    });
-	    this.coquette.entities.all(Particle).forEach(function (entity) {
-		entity.kill();
-	    });
-
-	    var ship = this.coquette.entities.all(Spaceship)[0];
-	    if (ship){
-		ship.pos = { x: this.width / 2, y: this.height / 2 };
-		ship.vector = { x: 0, y: 0 };
-		ship.angle = 0;
-		ship.dead = false;
-	    }
-	    var ball = this.coquette.entities.all(Ball)[0];
-	    if (ball){
-		ball.pos = { x: this.width / 2, y: this.height / 2 };
-		ball.vel = { x: .4, y: .2 };
-	    }
-
-	    $("#lose").hide();
-
-	    this.startLevel();
-	    
-	    
-	};	
-
-	Game.prototype.update = function(ctx){
-	    if (this.coquette.entities.all(Adversary).length == 0 && this.coquette.entities.all(Ball).length == 0){
-		this.playing = false;
-		this.startLevel();
-	    }
-
-	};
-
-	Game.prototype.wrapPosition = function(pos){
-	    return {
-		x: wrapPoint(pos.x, this.width),
-		y: wrapPoint(pos.y, this.height),
-	    }
-	};
-
-
-	Game.prototype.createPongWalls = function(){
-	    // This should be somewhere else.
-	    // Make the computations a little better.
-	    var xLength = this.height - (50 * 2);
-	    var wallLength = (xLength - 100) / 2;
-
-	    var walls = [
-		[25, 50, this.width-100, 'y'],
-		[25, this.height - 50, this.width-100, 'y'],
-
-		[25, 50, wallLength, 'x'],
-		[25, wallLength+150, wallLength, 'x'],
-		[this.width-75, 50, wallLength, 'x'],
-		[this.width-75, wallLength+150, wallLength, 'x'],		
-		]
-
-	    for (var i=0; i < walls.length; i++){
-		var props = walls[i]; // destructure?
-		
-		this.coquette.entities.create(Wall, {
-		    pos: { x: props[0], y: props[1] },
-		    length: props[2],
-		    direction: props[3]
-		})
-	    };
-	};
-
-
-	Game.prototype.wrapPosition = function(pos){
-	    return {
-		x: wrapPoint(pos.x, this.width),
-		y: wrapPoint(pos.y, this.height),
-	    }
-	};
-
-	
-
-	Game.prototype.draw = function(ctx){
-
-	    this.drawLevel(ctx);
-	    this.drawScore(ctx);
-	    this.drawControls(ctx);
-
-	    if (this.state === this.STATE.LOSE){
-		this.drawLose(ctx);
-	    };
-	};
-	
-	Game.prototype.drawLevel = function(ctx){
-	    ctx.lineWidth=1;
-	    ctx.fillStyle = "#817a72";
-	    ctx.font = "12px 'IBM Plex Mono', monospace";
-	    ctx.fillText("LEVEL " + this.level, 20, 28);
-	};
-
-	Game.prototype.drawScore = function(ctx){
-	    ctx.lineWidth=1;
-	    ctx.fillStyle = "#f2eadf";
-	    ctx.font = "12px 'IBM Plex Mono', monospace";
-	    ctx.fillText("SCORE " + this.score, 20, 48);
-	};
-
-	Game.prototype.drawControls = function(ctx){
-	    ctx.lineWidth=1;
-	    ctx.fillStyle = "#817a72";
-	    ctx.font = "11px 'IBM Plex Mono', monospace";
-	    var xPos = this.width - 150;
-	    if (this.name == "asteroids"){
-		var controls = [
-		    "↑  THRUST",
-		    "← →  TURN",
-		    "SPACE  FIRE"
-		];
-	    };
-	    if (this.name == "touch"){
-		var controls = [
-		    "use the direction buttons",
-		    "eat the white squares"
-		];
-	    };
-	    if (this.name == "pong"){
-		var controls = [
-		    "s: p1 up",		    
-		    "d: p1 down",
-		    "↑: p2 up",
-		    "↓: p2 down",
-		];
-
-	    };	    
-
-	    for (var i=0; i < controls.length; i++){		
-		ctx.fillText(controls[i], xPos, 20 * (i+1));
-	    };
-	};
-
-	
-
-	Game.prototype.drawLose = function(ctx){
-	    $("#lose").show();
-	};
-
-	var startGame = function(game){
-	    if (loaded === false){
-		loaded = true;
-		var t = $("#game");
-		t.html('');
-		t.append($('<canvas/>', {'id': 'gameCanvas','Width': t.width(), 'Height': t.height()}));
-		currentGame = new Game("gameCanvas", t.width(), t.height(), game);
-		return currentGame;
-	    }
-	};
-
-	$("#gamelist li").click(function(){
-	    var name = $(this).data("game")
-	    var game = startGame(name);
-
-	    $("#playagain").click(function(){
-		game.restart();
-	    });
-	});
-
-	var menuItems = $("#gamelist li");
-	var selected = 0;
-	menuItems.eq(selected).addClass("selected");
-
-	menuItems.focus(function(){
-	    selected = menuItems.index(this);
-	    menuItems.removeClass("selected");
-	    $(this).addClass("selected");
-	});
-	menuItems.mouseenter(function(){
-	    selected = menuItems.index(this);
-	    menuItems.removeClass("selected");
-	    $(this).addClass("selected");
-	});
-
-	$(window).keydown(function(event){
-	    if (!loaded && (event.which === 38 || event.which === 40)){
-		event.preventDefault();
-		selected += event.which === 40 ? 1 : -1;
-		selected = (selected + menuItems.length) % menuItems.length;
-		menuItems.removeClass("selected");
-		menuItems.eq(selected).addClass("selected").focus();
-	    } else if (!loaded && event.which === 13){
-		menuItems.eq(selected).click();
-	    } else if (loaded && currentGame && currentGame.state === currentGame.STATE.LOSE &&
-		       (event.which === 13 || event.which === 82)){
-		currentGame.restart();
-	    }
-	});
+        items.forEach(function(item, index) {
+            item.addEventListener("click", function() {
+                select(index, false);
+                start(item.dataset.game);
+            });
+            item.addEventListener("focus", function() { select(index, false); });
+            item.addEventListener("mouseenter", function() { select(index, false); });
+        });
+        menuButton.addEventListener("click", menu);
+        document.getElementById("lose-menu").addEventListener("click", menu);
+        restartButton.addEventListener("click", restart);
+        canvas.addEventListener("pointermove", function(event) {
+            if (game && game.name === "ping" && game.state === game.STATE.PLAY) {
+                var bounds = canvas.getBoundingClientRect();
+                game.paddle.moveTo((event.clientX - bounds.left) * game.width / bounds.width);
+            }
+        });
+        canvas.addEventListener("click", function() {
+            canvas.focus();
+            if (game.name === "ping" && game.state === game.STATE.PLAY) game.ball.launch();
+        });
+        window.addEventListener("blur", function() {
+            arcadeSound.stop();
+            if (game) game.coquette.inputter._state = {};
+        });
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                arcadeSound.stop();
+                if (game) game.coquette.inputter._state = {};
+            }
+        });
+        window.addEventListener("keydown", function(event) {
+            arcadeSound.unlock();
+            var inMenu = !game || game.state === game.STATE.MENU;
+            if (event.target === soundButton && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                if (!event.repeat) soundButton.click();
+                return;
+            }
+            if (!lose.hidden && event.key === "Tab") {
+                event.preventDefault();
+                var buttons = [restartButton, document.getElementById("lose-menu"), soundButton];
+                var index = buttons.indexOf(document.activeElement);
+                buttons[(index + (event.shiftKey ? 2 : 1)) % buttons.length].focus();
+            } else if (inMenu && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+                event.preventDefault();
+                select(selected + (event.key === "ArrowDown" ? 1 : -1), true);
+            } else if (inMenu && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                if (!event.repeat) items[selected].click();
+            } else if (!inMenu && event.key === "Escape") {
+                event.preventDefault();
+                menu();
+            } else if (!inMenu && game.name === "ping" &&
+                       game.state === game.STATE.PLAY && event.key === " ") {
+                event.preventDefault();
+                if (!event.repeat) game.ball.launch();
+            } else if (!inMenu && game.state === game.STATE.LOSE &&
+                       event.key === " " && event.target.tagName === "BUTTON") {
+                event.preventDefault();
+                if (!event.repeat) event.target.click();
+            } else if (!inMenu && game.state === game.STATE.LOSE &&
+                       (event.key.toLowerCase() === "r" ||
+                        (event.key === "Enter" && event.target.tagName !== "BUTTON"))) {
+                event.preventDefault();
+                if (!event.repeat) restart();
+            }
+        });
+        select(0, false);
     });
-    
-})(window);
+})();

@@ -11,6 +11,41 @@ html, body {
     margin: 0;
 }
 
+[hidden] {
+    display: none !important;
+}
+
+button {
+    border: 1px solid #39342f;
+    padding: 0.85rem 1rem;
+    background: var(--surface);
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+button:hover,
+button:focus-visible {
+    border-color: var(--accent);
+    outline: 1px solid var(--accent);
+}
+
+button span {
+    margin-left: 1rem;
+    color: var(--muted);
+}
+
+#menu-button {
+    position: absolute;
+    z-index: 2;
+    top: 4%;
+    right: 7%;
+}
+
+
+
 body {
     background: var(--background);
     min-height: 100vh;
@@ -141,7 +176,6 @@ body {
     position: absolute;
     z-index: 3;
     inset: 0;
-    display: none;
     text-align: center;
     color: var(--primary);
     background: rgba(21, 19, 17, 0.76);
@@ -155,10 +189,15 @@ body {
 }
 
 #lose #playagain {
-    margin: 0;
+    margin: 0 auto;
     color: var(--accent);
     font-size: 0.7rem;
     cursor: pointer;
+}
+
+#lose button {
+    display: block;
+    margin: 1rem auto;
 }
 
 .x {
