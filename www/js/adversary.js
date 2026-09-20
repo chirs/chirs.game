@@ -51,6 +51,12 @@ var Asteroid = function(game, settings){
     
     this.shielded = false;
     this.shieldTime = new Date();
+    this.rotation = Math.random() * Math.PI * 2;
+    this.spin = (Math.random() - .5) * .001;
+    this.shape = [];
+    for (var i = 0; i < 10; i++){
+	this.shape.push(.72 + Math.random() * .28);
+    }
     
     if (this.vel == undefined){
 	this.vel = {x: makeVel(), y: makeVel()}
@@ -59,12 +65,30 @@ var Asteroid = function(game, settings){
 
 Asteroid.prototype = Object.create(Adversary.prototype);
 
+Asteroid.prototype.draw = function(ctx) {
+    var radius = this.size.x / 2;
+    var center = { x: this.pos.x + radius, y: this.pos.y + radius };
+    ctx.strokeStyle = "#f2eadf";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var i = 0; i < this.shape.length; i++){
+	var angle = this.rotation + (Math.PI * 2 * i / this.shape.length);
+	var x = center.x + Math.cos(angle) * radius * this.shape[i];
+	var y = center.y + Math.sin(angle) * radius * this.shape[i];
+	if (i === 0) ctx.moveTo(x, y);
+	else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+};
+
 
 Asteroid.prototype.update = function(tick) {
     var mx = this.vel.x * tick;
     var my = this.vel.y * tick;
     this.pos.x += mx;
     this.pos.y += my;
+    this.rotation += this.spin * tick;
     
     if (!this.game.coquette.renderer.onScreen(this)) {
 	this.pos = this.game.wrapPosition(this.pos);
@@ -74,6 +98,17 @@ Asteroid.prototype.update = function(tick) {
 Asteroid.prototype.explode = function() {
     this.game.coquette.entities.destroy(this);
     this.game.score += 1;    
+    for (var i = 0; i < 8 + this.rank * 2; i++){
+	var angle = Math.random() * Math.PI * 2;
+	var speed = .03 + Math.random() * .09;
+	this.game.coquette.entities.create(Particle, {
+	    pos: { x: this.pos.x + this.size.x / 2, y: this.pos.y + this.size.y / 2 },
+	    vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
+	    life: 180 + Math.random() * 320,
+	    color: i % 4 === 0 ? "#ff5c35" : "#f2eadf",
+	    size: 2 + Math.random() * 2
+	});
+    }
     // Should probably have a different method that handles this when an asteroid gets shot.
     if (this.rank > 1){
 	this.game.coquette.entities.create(Asteroid, {pos: { x: this.pos.x, y: this.pos.y },

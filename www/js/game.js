@@ -3,6 +3,7 @@
     $(document).ready(function() {
 
 	var loaded = false; // Game has been loaded?
+	var currentGame;
 
 	var Game = function(canvasId, width, height, name) {
 	    
@@ -10,7 +11,7 @@
 
 	    this.name = name;
 
-	    this.coquette = new Coquette(this, canvasId, width, height, "#000");	    
+	    this.coquette = new Coquette(this, canvasId, width, height, "#151311");
 
 	    this.width = width;
 	    this.height = height;
@@ -39,7 +40,7 @@
 	    if (name == 'asteroids'){
 		this.coquette.entities.create(Spaceship, { 
 		    game: game,
-		    pos:{ x:250, y:100 }, 
+		    pos:{ x: width / 2, y: height / 2 },
 		    color:"#f00", // red
 		    
 		    angle: 0,
@@ -110,8 +111,13 @@
 
 		if (this.name == 'asteroids'){
 		    for (var i=0; i < 5; i++){
-			var x = Math.random() * this.width;
-			var y = Math.random() * this.height;
+			var x;
+			var y;
+			do {
+			    x = Math.random() * this.width;
+			    y = Math.random() * this.height;
+			} while (Math.abs(x - this.width / 2) < 140 &&
+				 Math.abs(y - this.height / 2) < 140);
 			var settings = { pos: { x:x, y:y }, rank: 3 };
 			this.coquette.entities.create(Asteroid, settings);
 		    };
@@ -138,10 +144,27 @@
 	    this.coquette.entities.all(Adversary).forEach(function (entity) {
 		entity.kill(true); // remove this true call when you split out kill on Asteroids.
 	    });
+	    this.coquette.entities.all(Bullet).forEach(function (entity) {
+		entity.kill();
+	    });
+	    this.coquette.entities.all(Particle).forEach(function (entity) {
+		entity.kill();
+	    });
 
-	    console.log("x");
+	    var ship = this.coquette.entities.all(Spaceship)[0];
+	    if (ship){
+		ship.pos = { x: this.width / 2, y: this.height / 2 };
+		ship.vector = { x: 0, y: 0 };
+		ship.angle = 0;
+		ship.dead = false;
+	    }
+	    var ball = this.coquette.entities.all(Ball)[0];
+	    if (ball){
+		ball.pos = { x: this.width / 2, y: this.height / 2 };
+		ball.vel = { x: .4, y: .2 };
+	    }
+
 	    $("#lose").hide();
-	    console.log("x");	    
 
 	    this.startLevel();
 	    
@@ -214,29 +237,28 @@
 	
 	Game.prototype.drawLevel = function(ctx){
 	    ctx.lineWidth=1;
-	    ctx.fillStyle = "#fff";
-	    ctx.font = "18px sans-serif";
-	    ctx.fillText("Level: " + this.level, 20, 20);
+	    ctx.fillStyle = "#817a72";
+	    ctx.font = "12px 'IBM Plex Mono', monospace";
+	    ctx.fillText("LEVEL " + this.level, 20, 28);
 	};
 
 	Game.prototype.drawScore = function(ctx){
 	    ctx.lineWidth=1;
-	    ctx.fillStyle = "#fff";
-	    ctx.font = "18px sans-serif";
-	    ctx.fillText("Score: " + this.score, 20, 40);
+	    ctx.fillStyle = "#f2eadf";
+	    ctx.font = "12px 'IBM Plex Mono', monospace";
+	    ctx.fillText("SCORE " + this.score, 20, 48);
 	};
 
 	Game.prototype.drawControls = function(ctx){
 	    ctx.lineWidth=1;
-	    ctx.fillStyle = "#fff";
-	    ctx.font = "12px sans-serif";
+	    ctx.fillStyle = "#817a72";
+	    ctx.font = "11px 'IBM Plex Mono', monospace";
 	    var xPos = this.width - 150;
 	    if (this.name == "asteroids"){
 		var controls = [
-		    "↑: thrust",
-		    "←: rotate ↺",
-		    "→: rotate ↻",
-		    "space: shoot"
+		    "↑  THRUST",
+		    "← →  TURN",
+		    "SPACE  FIRE"
 		];
 	    };
 	    if (this.name == "touch"){
@@ -272,17 +294,48 @@
 		var t = $("#game");
 		t.html('');
 		t.append($('<canvas/>', {'id': 'gameCanvas','Width': t.width(), 'Height': t.height()}));
-		return new Game("gameCanvas", t.width(), t.height(), game);
+		currentGame = new Game("gameCanvas", t.width(), t.height(), game);
+		return currentGame;
 	    }
 	};
 
 	$("#gamelist li").click(function(){
-	    var name = $(this).html()
+	    var name = $(this).data("game")
 	    var game = startGame(name);
 
 	    $("#playagain").click(function(){
 		game.restart();
 	    });
+	});
+
+	var menuItems = $("#gamelist li");
+	var selected = 0;
+	menuItems.eq(selected).addClass("selected");
+
+	menuItems.focus(function(){
+	    selected = menuItems.index(this);
+	    menuItems.removeClass("selected");
+	    $(this).addClass("selected");
+	});
+	menuItems.mouseenter(function(){
+	    selected = menuItems.index(this);
+	    menuItems.removeClass("selected");
+	    $(this).addClass("selected");
+	});
+
+	$(window).keydown(function(event){
+	    if (!loaded && (event.which === 38 || event.which === 40)){
+		event.preventDefault();
+		selected += event.which === 40 ? 1 : -1;
+		selected = (selected + menuItems.length) % menuItems.length;
+		menuItems.removeClass("selected");
+		menuItems.eq(selected).addClass("selected").focus();
+	    } else if (!loaded && event.which === 13){
+		menuItems.eq(selected).click();
+	    } else if (loaded && currentGame && currentGame.state === currentGame.STATE.LOSE &&
+		       (event.which === 13 || event.which === 82)){
+		currentGame.restart();
+	    }
 	});
     });
     

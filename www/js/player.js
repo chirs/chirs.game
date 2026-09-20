@@ -67,24 +67,36 @@ var Spaceship = function(game, settings) {
     Player.call(this, game, settings);
     
     this.size = { x:25, y:25 };
+    this.dead = false;
 };
 
 Spaceship.prototype = Object.create(Player.prototype);	
 
 Spaceship.prototype.draw = function(ctx){
-    ctx.fillStyle = this.color;
-    
-    ctx.strokeStyle="#FF0000";
-    ctx.moveTo(this.pos.x,this.pos.y);
+    if (this.dead) return;
+
+    var center = { x: this.pos.x + 12.5, y: this.pos.y + 12.5 };
+    var forward = { x: Math.sin(this.angle), y: Math.cos(this.angle) };
+    var side = { x: Math.cos(this.angle), y: -Math.sin(this.angle) };
+
+    ctx.strokeStyle = "#f2eadf";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(this.pos.x, this.pos.y, 10, 0, 2 * Math.PI);
-    ctx.stroke();		
-    
-    ctx.beginPath();
-    ctx.moveTo(this.pos.x,this.pos.y);		
-    ctx.lineTo(this.pos.x + Math.sin(this.angle) * 20, this.pos.y + Math.cos(this.angle) * 20);
-    
+    ctx.moveTo(center.x + forward.x * 13, center.y + forward.y * 13);
+    ctx.lineTo(center.x - forward.x * 9 + side.x * 9, center.y - forward.y * 9 + side.y * 9);
+    ctx.lineTo(center.x - forward.x * 5, center.y - forward.y * 5);
+    ctx.lineTo(center.x - forward.x * 9 - side.x * 9, center.y - forward.y * 9 - side.y * 9);
+    ctx.closePath();
     ctx.stroke();
+
+    if (this.game.coquette.inputter.state(this.game.coquette.inputter['UP_ARROW'])){
+	ctx.strokeStyle = "#ff5c35";
+	ctx.beginPath();
+	ctx.moveTo(center.x - forward.x * 7 + side.x * 3, center.y - forward.y * 7 + side.y * 3);
+	ctx.lineTo(center.x - forward.x * (13 + Math.random() * 6), center.y - forward.y * (13 + Math.random() * 6));
+	ctx.lineTo(center.x - forward.x * 7 - side.x * 3, center.y - forward.y * 7 - side.y * 3);
+	ctx.stroke();
+    }
 };
 
 Spaceship.prototype.shootBullet = function(vector) {
@@ -100,6 +112,7 @@ Spaceship.prototype.shootBullet = function(vector) {
 };
 
 Spaceship.prototype.update = function() {
+    if (this.dead) return;
     var speed = 4;
     
     // accelerate
@@ -140,7 +153,20 @@ Spaceship.prototype.controls = function(){
 };
 
 Spaceship.prototype.collision = function(other) {
-    if ((other instanceof Asteroid) && (other.shielded === false)){
+
+    if ((other instanceof Asteroid) && (other.shielded === false) &&
+	this.game.state !== this.game.STATE.LOSE){
+	this.dead = true;
+	for (var i = 0; i < 18; i++){
+	    var angle = Math.random() * Math.PI * 2;
+	    var speed = .04 + Math.random() * .12;
+	    this.game.coquette.entities.create(Particle, {
+		pos: { x: this.pos.x + 12, y: this.pos.y + 12 },
+		vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
+		life: 350 + Math.random() * 450,
+		color: i % 3 === 0 ? "#ff5c35" : "#f2eadf"
+	    });
+	}
 	this.game.state = this.game.STATE.LOSE;
     }
 };
@@ -306,6 +332,5 @@ Paddle.prototype.collision = function(other) {
 	// do something.
     }
 };
-
 
 

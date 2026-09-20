@@ -10,7 +10,7 @@ var Bullet = function(game, settings) {
 
 // huh?
 Bullet.prototype = {
-    size: { x:12, y:12 },
+    size: { x:5, y:5 },
     speed: .5,
 };
 
@@ -28,8 +28,10 @@ Bullet.prototype.update = function(tick) {
 };
 
 Bullet.prototype.draw = function(ctx) {
-    ctx.fillStyle = "#4f4";
-    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+    ctx.fillStyle = "#ff5c35";
+    ctx.beginPath();
+    ctx.arc(this.pos.x + 2.5, this.pos.y + 2.5, 2.5, 0, Math.PI * 2);
+    ctx.fill();
 };
 
 Bullet.prototype.collision = function(other) {
@@ -43,6 +45,37 @@ Bullet.prototype.collision = function(other) {
 };
 
 Bullet.prototype.kill = function() {
+    this.game.coquette.entities.destroy(this);
+};
+
+
+var Particle = function(game, settings) {
+    this.game = game;
+    this.pos = { x: settings.pos.x, y: settings.pos.y };
+    this.vel = settings.vel;
+    this.life = settings.life || 400;
+    this.maxLife = this.life;
+    this.color = settings.color || "#ff5c35";
+    this.size = { x: settings.size || 3, y: settings.size || 3 };
+};
+
+Particle.prototype.update = function(tick) {
+    this.life -= tick;
+    this.pos.x += this.vel.x * tick;
+    this.pos.y += this.vel.y * tick;
+    this.vel.x *= .98;
+    this.vel.y *= .98;
+    if (this.life <= 0) this.kill();
+};
+
+Particle.prototype.draw = function(ctx) {
+    ctx.globalAlpha = Math.max(0, this.life / this.maxLife);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
+    ctx.globalAlpha = 1;
+};
+
+Particle.prototype.kill = function() {
     this.game.coquette.entities.destroy(this);
 };
 
@@ -116,6 +149,5 @@ Wall.prototype.draw = function(ctx) {
     ctx.fillStyle = "#dbd"
     ctx.fillRect(this.pos.x, this.pos.y, this.size.x, this.size.y);
 };
-
 
 
