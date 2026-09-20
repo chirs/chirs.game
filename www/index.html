@@ -24,25 +24,35 @@
 
 <body>
   <div id="header">
-      <p>generic video games&trade;</p>
+      <p>chirs.game presents</p>
   </div>
   <div id="game">
-    <div id="title">chirs<span class="dot">.</span>game</div>
+    <div id="title">generic<br><span>video games</span></div>
     <ul id="gamelist">
       <li id="touch" data-game="touch" tabindex="0">
         <span class="number">01</span>
         <span class="game-name">touch</span>
-        <span class="description">eat the white squares / avoid the red</span>
+        <svg class="primitive primitive-touch" viewBox="0 0 100 36" aria-hidden="true">
+          <rect x="4" y="14" width="8" height="8" />
+          <rect x="42" y="5" width="8" height="8" />
+          <rect class="accent" x="76" y="22" width="10" height="10" />
+        </svg>
       </li>
       <li id="asteroids" data-game="asteroids" tabindex="0">
         <span class="number">02</span>
         <span class="game-name">space</span>
-        <span class="description">turn / thrust / shoot / survive</span>
+        <svg class="primitive primitive-space" viewBox="0 0 100 44" aria-hidden="true">
+          <path d="M7 22 L13 7 L29 3 L41 12 L38 29 L24 39 L10 34 Z" />
+          <path class="accent" d="M70 34 L78 9 L86 34 L78 28 Z" />
+        </svg>
       </li>
       <li id="pong" data-game="pong" tabindex="0">
         <span class="number">03</span>
         <span class="game-name">pong</span>
-        <span class="description">two paddles / one ball / no excuses</span>
+        <svg class="primitive primitive-pong" viewBox="0 0 100 40" aria-hidden="true">
+          <path d="M10 4 V36 M90 4 V36" />
+          <rect class="accent" x="47" y="17" width="6" height="6" />
+        </svg>
       </li>
       <!--<li id="nibbles">nibbles</li>-->
       <!--<li id="pacman">pacman</li>-->

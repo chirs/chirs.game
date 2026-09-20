@@ -23,7 +23,7 @@ body {
     z-index: 2;
     top: 5%;
     left: 7%;
-    color: var(--muted);
+    color: var(--accent);
     font-size: 0.68rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -43,18 +43,20 @@ body {
 }
 
 #game #title {
-    margin: 8vh 0 9vh;
-    font-size: clamp(2.7rem, 7vw, 6.5rem);
-    line-height: 0.9;
-    letter-spacing: -0.08em;
+    margin: 7vh 0 7vh;
+    font-size: clamp(4.2rem, 10vw, 9rem);
+    font-weight: 500;
+    line-height: 0.72;
+    letter-spacing: -0.09em;
+    text-transform: uppercase;
 }
 
-#game #title .dot {
+#game #title span {
     color: var(--accent);
 }
 
 #gamelist {
-    width: min(720px, 100%);
+    width: min(620px, 100%);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -63,8 +65,8 @@ body {
 
 #gamelist li {
     display: grid;
-    grid-template-columns: 3rem minmax(9rem, 1fr) minmax(15rem, 1.5fr);
-    align-items: baseline;
+    grid-template-columns: 3rem 10rem auto;
+    align-items: center;
     gap: 1rem;
     padding: 1rem 0;
     border-bottom: 1px solid #39342f;
@@ -88,7 +90,7 @@ body {
 }
 
 #gamelist .number,
-#gamelist .description {
+#gamelist .primitive {
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -99,9 +101,32 @@ body {
     text-transform: uppercase;
 }
 
-#gamelist .description {
-    justify-self: end;
-    text-align: right;
+#gamelist .primitive {
+    width: 6rem;
+    height: 2.6rem;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+#gamelist .primitive .accent {
+    fill: var(--accent);
+    stroke: var(--accent);
+}
+
+#gamelist .primitive-touch {
+    margin-left: 1.25rem;
+    fill: currentColor;
+    stroke: none;
+}
+
+#gamelist .primitive-space {
+    margin-left: 3.75rem;
+}
+
+#gamelist .primitive-pong {
+    margin-left: 0.25rem;
 }
 
 #game canvas {
@@ -147,10 +172,16 @@ body {
     }
 
     #gamelist li {
-        grid-template-columns: 2.5rem 1fr;
+        grid-template-columns: 2.5rem 8rem auto;
     }
 
-    #gamelist .description {
-        display: none;
+    #game #title {
+        margin-top: 9vh;
+        font-size: clamp(3.4rem, 17vw, 5.5rem);
+    }
+
+    #gamelist .primitive {
+        width: 4.5rem;
+        margin-left: 0;
     }
 }
