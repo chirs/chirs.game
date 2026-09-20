@@ -4,29 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Browser-based retro arcade game collection ("Where names become games!") at chirs.game. Three playable games: Touch, Space, and Pong. Pure static site — no build tools, no package manager, no transpilation.
+Browser-based retro arcade game collection ("Where names become games!") at chirs.game. Three playable games: Touch, Space, and Ping. Pure static site — no build tools, no package manager, no transpilation.
 
 ## Running Locally
 
-Serve `src/` with any HTTP server:
+Serve `www/` with any HTTP server:
 ```bash
-python -m http.server 8000 --directory src
+python3 -m http.server 8000 --directory www
 ```
-Then open http://localhost:8000. There are no tests or linting tools.
+Then open http://localhost:8000. Run regression tests with `node --test tests/arcade.test.cjs` (Node.js 18+, no packages required).
 
 ## Architecture
 
 **Game engine**: Coquette.js (bundled as `coquette-min.js`) — provides game loop (`requestAnimationFrame`), entity management, AABB/circle collision detection, keyboard input tracking, and Canvas 2D rendering.
 
 **Script load order** (matters — no module system):
-`func.js` → `objects.js` → `player.js` → `adversary.js` → `game.js`
+`func.js` → `sound.js` → `player.js` → `adversary.js` → `objects.js` → `game.js`
 
-### Key files in `src/js/`
+### Key files in `www/js/`
 
-- **game.js** — Game controller class. Initializes Coquette, manages game state (PLAY/LOSE), level progression, and per-game setup (entity spawning, wall creation for Pong). Wrapped in an IIFE.
-- **player.js** — Player entity classes: `Toucher` (Touch), `Spaceship` (Space), `Paddle` (Pong). Each handles its own input and collision response.
-- **adversary.js** — Enemy entities: `Adversary` (Touch), `Asteroid` (Space, breaks into smaller ranks on destruction).
-- **objects.js** — Supporting entities: `Bullet`, `Ball`, `Wall`.
+- **sound.js** — Shared Web Audio synthesis. Lazily creates one audio context after interaction, limits active voices, and disconnects finished sounds. The UI persists mute state; menu, restart, blur, and hidden tabs stop active sounds.
+
+- **game.js** — Game controller class (`window.ArcadeGame`). Reuses one Coquette instance, manages MENU/PLAY/LOSE state, level progression, resets, and menu controls. Gameplay stops after a loss; particles can finish animating.
+- **player.js** — Player entity classes: `Toucher` (Touch), `Spaceship` (Space), `PingPaddle` (Ping).
+- **adversary.js** — `TouchSquare` handles drifting food and lethal hazards, with arena-boundary bounces; `Asteroid` handles Space enemies and fragmentation. Both inherit from `Adversary`.
+- **objects.js** — Supporting entities: `Bullet`, `Particle`, `Brick`, `PingBall`, `Wall`. Ping uses substeps for ball movement and handles its own brick, paddle, and boundary collisions.
 - **func.js** — Utility functions: screen wrapping (`wrapPoint`), time throttling (`timePassed`), random velocity (`makeVel`), grid helpers.
 
 ### Entity pattern
@@ -44,13 +46,15 @@ Inheritance uses `Object.create()` on prototypes (e.g., `Spaceship.prototype = O
 
 ### UI layer
 
-jQuery 2.0.2 (CDN) handles game menu selection (`#gamelist li` click handlers) and game-over modal (`#lose`). Canvas is created dynamically by Coquette inside `#game`.
+Native DOM events handle menu selection and the game-over dialog. The selector and canvas stay in the DOM and toggle visibility. Escape or the Menu button returns to the selector; Enter or R restarts after a loss. Ping accepts arrow keys or pointer movement and Space or a click to serve.
+
+Touch uses elapsed-time movement with normalized diagonals and arena bounds. Food adds 10 points and three pixels of player size. Clearing food resets size to 16 and replaces the wave with more food and faster hazards, capped at 12 of each. Wave spawns leave a safe area around the player; particles mark pickups and death.
 
 ## Deployment
 
-Nginx serves static files from `src/`. Config is in `etc/nginx/chirs.game`.
+Nginx configuration is in `etc/nginx/chirs.game`; the local static site lives in `www/`.
 
 ## Compatibility notes
 
 - Use `Math.pow()` instead of `**` operator (Safari compatibility — see commit 8101446).
-- jQuery and Coquette are loaded from CDN; all game code is vanilla ES5 JavaScript.
+- Coquette is bundled locally. Game scripts use plain JavaScript with no runtime package dependencies; Google Fonts is the only external page resource.
