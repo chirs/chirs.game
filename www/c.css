@@ -44,7 +44,16 @@ button span {
     right: 7%;
 }
 
+#sound-button {
+    position: fixed;
+    z-index: 4;
+    bottom: 3%;
+    right: 7%;
+}
 
+#sound-button[aria-pressed="true"] {
+    color: var(--muted);
+}
 
 body {
     background: var(--background);

@@ -143,6 +143,7 @@ Asteroid.prototype.update = function(tick) {
 };
 
 Asteroid.prototype.explode = function() {
+    this.game.sound.play("asteroid", this.rank);
     this.game.coquette.entities.destroy(this);
     this.game.score += 1;    
     for (var i = 0; i < 8 + this.rank * 2; i++){

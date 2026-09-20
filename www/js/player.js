@@ -132,6 +132,7 @@ Spaceship.prototype.shootBullet = function(vector) {
 	});
 	
 	this.lastShot = new Date().getTime();
+        this.game.sound.play("shot");
     }
 };
 
@@ -181,6 +182,7 @@ Spaceship.prototype.collision = function(other) {
     if ((other instanceof Asteroid) && (other.shielded === false) &&
 	this.game.state !== this.game.STATE.LOSE){
 	this.dead = true;
+        this.game.sound.play("death");
 	for (var i = 0; i < 18; i++){
 	    var angle = Math.random() * Math.PI * 2;
 	    var speed = .04 + Math.random() * .12;
